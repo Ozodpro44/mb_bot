@@ -17,7 +17,7 @@ func (s *Storage) CreateCategory(category *models.Category) error {
 }
 
 func (s *Storage) GetAllCategories() (*models.Categories, error) {
-	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, abelety, created_at FROM categories")
+	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, abelety, created_at FROM categories ORDER BY name_uz ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch categories: %v", err)
 	}

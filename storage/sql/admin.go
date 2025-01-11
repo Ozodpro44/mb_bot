@@ -64,3 +64,34 @@ func (s *Storage) SetAdminLang(admin_id int64, lang string) (string, error) {
 	}
 	return lang, nil
 }
+
+func (s *Storage) CloseDay() error {
+	_, err := s.db.Exec("UPDATE order_numbers SET daily_order_number = 0")
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec("UPDATE branch SET opened = false WHERE id = 'a7c96256-961a-4694-8991-622851e75a96'")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) CheckOpened() (bool, error) {
+	var opened bool
+	err := s.db.QueryRow("SELECT opened FROM branch WHERE id = 'a7c96256-961a-4694-8991-622851e75a96'").Scan(&opened)
+	if err != nil {
+		return false, err
+	}
+	return opened, nil
+}
+
+func (s *Storage) OpenDay() error {
+	_, err := s.db.Exec("UPDATE branch SET opened = true WHERE id = 'a7c96256-961a-4694-8991-622851e75a96'")
+	if err != nil {
+		return err
+	}
+	return nil
+
+}

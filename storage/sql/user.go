@@ -116,6 +116,10 @@ func (s *Storage) GetUserMessageStatus(telegramID int64) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	_, err = s.db.Exec("UPDATE user_msg_status SET status = $1  WHERE telegram_id = $2", "not", telegramID)
+	if err != nil {
+		return "", err
+	}
 	return status, nil
 }
 
@@ -128,51 +132,54 @@ func (s *Storage) GetDataUserMessageStatus(telegramID int64) (string, error) {
 	return data, nil
 }
 
-func (s *Storage) SetUserLocation(telegramID int64, location *models.Location) (string, error) {
-
+func (s *Storage) CreateLocation(location *models.Location) (*models.Location, error) {
 	var user_id uuid.UUID
-
-	err := s.db.QueryRow(`
-		SELECT id
-		FROM users
-		WHERE telegram_id = $1`, telegramID).Scan(&user_id)
-
+	err := s.db.QueryRow("SELECT id FROM users WHERE telegram_id = $1", location.UserID).Scan(&user_id)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch user: %v", err)
+		return nil, fmt.Errorf("failed to fetch user: %v", err)
 	}
 
-	_, err = s.db.Exec(`
-        INSERT INTO locations (id, user_id, name_uz, name_ru, name_en, lat, lon)
-        VALUES ($1, $2, $3, $4, $5, $6)`,
-		uuid.New(), user_id, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude)
-	if err != nil {
-		return "", fmt.Errorf("failed to set location: %v", err)
-	}
-	return "", nil
-}
-
-func (s *Storage) GetLocationByUserID(telegramID int64) (*models.GetLocation, error) {
-	var locations models.GetLocation
-
-	rows, err := s.db.Query(
-		`SELECT l.id, l.name_uz, l.name_ru, l.name_en, l.lat, l.lon,
-			FROM locations l
-			JOIN users u ON u.id = l.user_id
-			WHERE u.telegram_id = $1`, telegramID)
-	if err != nil {
-		return &locations, fmt.Errorf("failed to fetch order items: %v", err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var location models.Location
-		err = rows.Scan(&location.ID, &location.Name_uz, &location.Name_ru, &location.Name_en, &location.Latitude, &location.Longitude)
+	row := s.db.QueryRow("SELECT 1 FROM locations WHERE user_id = $1", user_id)
+	var exists bool
+	err = row.Scan(&exists)
+	if err == sql.ErrNoRows {
+		_, err = s.db.Exec(`
+			INSERT INTO locations (id, user_id, name_uz, name_ru, name_en, lat, lon)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			uuid.New(), user_id, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude)
 		if err != nil {
-			return &locations, fmt.Errorf("failed to scan order items: %v", err)
+			return nil, fmt.Errorf("failed to create location: %v", err)
 		}
-		locations.Locations = append(locations.Locations, &location)
+		return location, nil
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to check location: %v", err)
+	} else {
+		_, err = s.db.Exec(`
+			UPDATE locations SET name_uz = $1, name_ru = $2, name_en = $3, lat = $4, lon = $5
+			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude, user_id,)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update location: %v", err)
+		}
+		return location, nil
 	}
 
-	return &locations, nil
 }
 
+func (s *Storage) DeleteLocationByUserID(telegramID int64) error {
+	_, err := s.db.Exec("DELETE FROM locations WHERE user_id = $1", telegramID)
+	if err != nil {
+		return fmt.Errorf("failed to delete location: %v", err)
+	}
+	return nil
+}
+
+func (s *Storage) GetLocationByID(telegramId int64) (*models.Location, error) {
+	location := &models.Location{}
+	err := s.db.QueryRow("SELECT id, user_id, name_uz, name_ru, name_en, lat, lon FROM locations WHERE user_id = $1", telegramId).Scan(&location.ID, &location.UserID, &location.Name_uz, &location.Name_ru, &location.Name_en, &location.Latitude, &location.Longitude)
+	if err != nil {
+		return nil, err
+	}
+	return location, nil
+
+}
 

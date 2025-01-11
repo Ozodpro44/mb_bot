@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"bot/lib/helpers"
 	"bot/models"
 	"fmt"
 	"log"
@@ -8,17 +9,22 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Storage) CreateOrder(userID int64) (string, error) {
+func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error) {
 	var totalPrice float64
 	var orderID uuid.UUID
 	var daily_order_number int
 	var order_number int
 	var user_id uuid.UUID
+	var lat float32
+	var lon float32
+	var address string
+	var phone string
+
 
 	err := s.db.QueryRow(`
-		SELECT id
+		SELECT id, phone_number
 		FROM users
-		WHERE telegram_id = $1`, userID).Scan(&user_id)
+		WHERE telegram_id = $1`, userID).Scan(&user_id, &phone)
 
 	if err != nil {
 		return "", err
@@ -36,6 +42,19 @@ func (s *Storage) CreateOrder(userID int64) (string, error) {
 	}
 
 	log.Println("order_number succsefully fetched in CreateOrder")
+
+	err = s.db.QueryRow(`
+		SELECT lat,lon,name_uz
+		FROM locations
+		WHERE user_id = $1`,user_id).Scan(&lat,&lon,&address)
+		
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("location succsefully fetched in CreateOrder")
+
+
 
 	// Calculate total price
 	rows, err := s.db.Query(`
@@ -73,9 +92,20 @@ func (s *Storage) CreateOrder(userID int64) (string, error) {
 	}
 	order_id := uuid.New()
 
+	delivery := "0"
+	if !helpers.Haversine(41.275030,69.264482,float64(lat),float64(lon)){
+		delivery = "Yandex Dostavka"
+	}
+	var status string
+	if payment_type == "card" {
+		status = "pending"
+	}else {
+		status = "preparing"
+	}
+
 	// Create order
-	err = tx.QueryRow("INSERT INTO orders (id,user_id, total_price, order_number, daily_order_number) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		order_id, user_id, totalPrice, order_number+1, daily_order_number+1).Scan(&orderID)
+	err = tx.QueryRow("INSERT INTO orders (id,user_id, total_price, order_number, daily_order_number, adress, lat, lon, delivery_price, phone_number,status,payment_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
+		order_id, user_id, totalPrice, order_number+1, daily_order_number+1, address, lat, lon,	delivery, phone, status, payment_type).Scan(&orderID)
 	if err != nil {
 		tx.Rollback()
 		return "", err
@@ -173,6 +203,8 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 	var orders []models.OrderDetails
 	var order models.OrderDetails
 	user_id := uuid.UUID{}
+	var adress models.Location
+
 
 	err := s.db.QueryRow(`
 		SELECT id
@@ -185,10 +217,11 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 
 	// Fetch order details
 	rows, err := s.db.Query(`
-        SELECT id, order_number, user_id, total_price, status, created_at
+        SELECT id, order_number,daily_order_number, user_id, total_price, status, created_at, delivery_price, phone_number,lat,lon,adress, payment_type
         FROM orders
         WHERE user_id = $1
-		ORDER BY id DESC`, user_id)
+		ORDER BY created_at DESC
+		LIMIT 1`, user_id)
 	if err != nil {
 		return &orders, fmt.Errorf("failed to fetch order: %v", err)
 	}
@@ -196,7 +229,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 
 	for rows.Next() {
 		order = models.OrderDetails{}
-		err = rows.Scan(&order.OrderID, &order.Order_number, &order.UserID, &order.TotalPrice, &order.Status, &order.CreatedAt)
+		err = rows.Scan(&order.OrderID, &order.Order_number, &order.Daily_order_number, &order.UserID, &order.TotalPrice, &order.Status, &order.CreatedAt, &order.Delivery_type, &order.PhoneNumber, &adress.Latitude, &adress.Longitude, &adress.Name_uz, &order.Payment_type)
 		if err != nil {
 			return &orders, fmt.Errorf("failed to scan order: %v", err)
 		}
@@ -218,6 +251,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 			}
 			order.Items = append(order.Items, &items)
 		}
+		order.Address = &adress
 		orders = append(orders, order)
 	}
 
@@ -227,10 +261,12 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 
 func (s *Storage) GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails, error) {
 	order := &models.OrderDetails{}
+	adress := &models.Location{}
+
 	err := s.db.QueryRow(`
-        SELECT o.id, o.order_number, o.user_id, o.total_price, o.status, o.created_at
+        SELECT o.id, o.order_number,o.daily_order_number, o.user_id, o.total_price, o.status, o.created_at, o.adress, o.lat, o.lon, o.delivery_price, o.payment_type, o.phone_number
         FROM orders o
-        WHERE o.id = $1`, orderID).Scan(&order.OrderID, &order.Order_number, &order.UserID, &order.TotalPrice, &order.Status, &order.CreatedAt)
+        WHERE o.id = $1`, orderID).Scan(&order.OrderID, &order.Order_number, &order.Daily_order_number, &order.UserID, &order.TotalPrice, &order.Status, &order.CreatedAt, &adress.Name_uz, &adress.Latitude, &adress.Longitude, &order.Delivery_type, &order.Payment_type, &order.PhoneNumber)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch order: %v", err)
 	}
@@ -252,8 +288,16 @@ func (s *Storage) GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails
 		}
 		order.Items = append(order.Items, &item)
 	}
+	order.Address = adress
 
 	return order, nil
 
 }
 	
+func (s *Storage) ChangeOrderStatus(orderID string, status string) (string, error) {
+	_, err := s.db.Exec("UPDATE orders SET status = $1 WHERE id = $2", status, orderID)
+	if err != nil {
+		return "", err
+	}
+	return status, nil
+}

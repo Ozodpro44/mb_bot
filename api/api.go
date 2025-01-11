@@ -47,18 +47,29 @@ func Api(o *Options) {
 
 	bot.Handle(telebot.OnContact, h.HandleRegistrationSteps)
 
-	// bot.Handle(telebot.OnLocation, h)
+	bot.Handle(telebot.OnLocation, h.HandleLocation)
+
+	// bot.Handle(&telebot.InlineButton{Unique: "payment_type"}, h.SetPaymentType)
+
+	bot.Handle(&telebot.InlineButton{Unique: "continue_order"}, h.ShowMenu)
+
+	bot.Handle(&telebot.InlineButton{Unique: "payment_type"}, h.CompleteOrder)
+
+	bot.Handle(&telebot.InlineButton{Unique: "true-location"}, h.ChoosePaymentType)
+
+	bot.Handle(&telebot.InlineButton{Unique: "false-location"}, h.HandleFalseLocation)
 
 	bot.Handle(&telebot.InlineButton{Unique: "language_add"}, h.GetUserName)
 
-	bot.Handle(&telebot.InlineButton{Unique: "confirm_order"}, h.CompleteOrder)
-
+	bot.Handle(&telebot.InlineButton{Unique: "confirm_order"}, h.RequestLocation)
 
 	bot.Handle(&telebot.InlineButton{Unique: "lang_btn"}, h.ChangeLanguage)
 
 	bot.Handle(&telebot.InlineButton{Unique: "my_orders"}, h.ShowUserOrders)
 
 	bot.Handle(&telebot.InlineButton{Unique: "order_btn"}, h.ShowMenu)
+
+	bot.Handle(&telebot.InlineButton{Unique: "about_us"}, h.SendAboutUs)
 
 	bot.Handle(&telebot.InlineButton{Unique: "show_cart"}, h.SendCart)
 
@@ -72,7 +83,7 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "add_category"}, h.CreateCategory)
 
-	bot.Handle(&telebot.InlineButton{Unique: "back_to_admin_menu"}, h.ShowAdminPanel)
+	bot.Handle(&telebot.InlineButton{Unique: "back_to_admin_menu"}, h.ShowCategoryMenu)
 
 	bot.Handle(&telebot.InlineButton{Unique: "add_product"}, h.AddProductHandler)
 
@@ -82,9 +93,25 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "increment_cart_product"}, h.HandleIncrement)
 
-	bot.Handle("/admin", h.ShowAdminPanel)
+	// bot.Handle("/admin", h.ShowAdminPanel)
 
 	bot.Handle(&telebot.InlineButton{Unique: "get_product_by_id"}, h.ShowProductByID)
+
+	bot.Handle(&telebot.InlineButton{Unique: "category_menu"}, h.CreateCategory)
+
+	bot.Handle(&telebot.InlineButton{Unique: "change_status_preparing"}, h.ChangeOrderStatus)
+
+	bot.Handle(&telebot.InlineButton{Unique: "change_status_deliver"}, h.ChangeOrderStatus)
+
+	bot.Handle(&telebot.InlineButton{Unique: "change_status_completed"}, h.ChangeOrderStatus)
+
+	bot.Handle(&telebot.InlineButton{Unique: "get_all_users"}, h.GetUsers)
+
+	bot.Handle(&telebot.InlineButton{Unique: "close_day"}, h.CloseDay)
+
+	bot.Handle(&telebot.InlineButton{Unique: "open_day"}, h.OpenDay)
+
+	bot.Handle(&telebot.InlineButton{Unique: "add_admin"}, h.AddAdmin)
 
 	bot.Start()
 

@@ -24,10 +24,19 @@ func (s *Storage) CreateProduct(product *models.Product) (*models.Product, error
 }
 
 func (s *Storage) UpdateProductById(product_id string) error {
+	// err := s.db.QueryRow("UPDATE products SET name_uz = $1, name_ru = $2, name_en = $3, price = $4, photo = $5, description = $6 WHERE id = $7", product.Name_uz, product.Name_ru, product.Name_en, product.Price, product.Photo, product.Description, product.ID)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to update product: %v", err)
+	// }
 	return nil
+
 }
 
 func (s *Storage) DeleteProductById(product_id string) error {
+	_, err := s.db.Exec("DELETE FROM products WHERE id = $1", product_id)
+	if err != nil {
+		return fmt.Errorf("failed to delete product: %v", err)
+	}
 	return nil
 }
 
@@ -35,7 +44,8 @@ func (s *Storage) GetProductsByCategory(categoryID string) (*models.Products, er
 	rows, err := s.db.Query(`
         SELECT id, name_uz, name_ru, name_en, price, photo, description, categories_id
         FROM products
-        WHERE categories_id = $1 AND is_active = true`, categoryID)
+        WHERE categories_id = $1 AND is_active = true
+		ORDER BY name_uz ASC`, categoryID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch products: %v", err)
 	}

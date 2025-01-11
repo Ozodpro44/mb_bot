@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bot/lib/helpers"
 	"bot/models"
 	"fmt"
 	"log"
@@ -11,90 +12,149 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
+const groupID = int64(-4774043538)
+
 var Messages = map[string]map[string]string{
 	"en": {
-		"welcome":         "Welcome! Please enter your name:",
-		"phone":           "Please enter your phone number (e.g., +998901234567):",
-		"done":            "Registration completed! Welcome, ",
-		"exists":          "You are already registered!",
-		"error":           "An error occurred. Please try again later.",
-		"language_prompt": "Please select your language:",
-		"lang_btn":        "🇬🇧Language",
-		"order_btn":       "🛍Make an order",
-		"get_phone":       "📱 Share your phone number",
-		"my_orders":       "My orders",
-		"about_us":        "About us",
-		"back":            "⬅️Back",
-		"cart":            "🛒Cart",
-		"add_to_cart":     "📥Add to cart",
-		"clear_cart":      "♻️ Clear",
-		"cart_messsage":   "*%s*\n\nPrice: %d UZS\nQuantity: %d\nTotal: %d UZS",
-		"empty_cart":      "Your cart is empty🛒🚫",
-		"user_menu":       "*Main menu:*\n\nChoose one of the following options",
-		"cart_items_msg":  "*%s* x %d \\= %d sum\n",
-		"cart_total":      "\n*Total:* %d sum",
-		"confirm_order":   "✅Confirm order",
-		"continue_order":  "🧾Continue order",
-		"added_to_cart":   "Product added to cart✅",
-		"order_msg": 		"📋 *Order number*: %d \n🚕 *Delivery type*: %s \n🏠 *Address*: %s \n📍 *Branch*: %s \n\n %s \n\n💵 *Products*: %.2f \n🚚 *Delivery price*: %.2f \n💰 *Total*: %.2f",
-		"delivery":			"Delivery🚚",
-		"pickup":			"Pickup🚶‍♂️",
+		"welcome":            "Welcome! Please enter your name:",
+		"phone":              "Please send your phone number by button 👇:",
+		"done":               "Registration completed! Welcome, ",
+		"exists":             "You are already registered!",
+		"error":              "An error occurred. Please try again later.",
+		"language_prompt":    "Пожалуйста, выберите ваш язык \n\nIltimos, o'zingizga qulay tilni tanlang \n\nPlease select your language:",
+		"lang_btn":           "🇬🇧Language",
+		"order_btn":          "🛍Make an order",
+		"get_phone":          "📱 Share your phone number",
+		"my_orders":          "My orders",
+		"about_us":           "About us",
+		"back":               "⬅️Back",
+		"cart":               "🛒Cart",
+		"add_to_cart":        "📥Add to cart",
+		"clear_cart":         "♻️ Clear",
+		"cart_messsage":      "*%s*\n\nPrice: %d UZS\nQuantity: %d\nTotal: %d UZS",
+		"empty_cart":         "Your cart is empty🛒🚫",
+		"user_menu":          "*Main menu:*\n\nChoose one of the following options",
+		"cart_items_msg":     "*%s* x %d \\= %d sum\n",
+		"cart_total":         "\n*Total:* %d sum",
+		"confirm_order":      "✅Confirm order",
+		"continue_order":     "🧾Continue order",
+		"added_to_cart":      "Product added to cart✅",
+		"order_msg":          "📋 *Order number*: %d \n🚕 *Delivery type*: Delivery \n🏠 *Address*: %s \n📍 *Branch*: Yakkasaroy \n\n %s \n\n💵 *Products*: %v \n🚚 *Delivery price*: %s \n💰 *Total*: %v \nPayment type: %s \nStatus: %s",
+		"delivery":           "Delivery🚚",
+		"pickup":             "Pickup🚶‍♂️",
+		"re-order":           "Re-order🔄",
+		"location_btn":       "📍 Send location",
+		"location_msg":       "Please send your location by button 👇:",
+		"true-location":      "✅Correct",
+		"false-location":     "❌Incorrect",
+		"check-location-msg": "Is this location correct?: \n%s",
+		"invalid_phone":      "Invalid phone number type please try again 👇",
+		"pending":            "Pending payment...",
+		"preparing":          "Preparing...",
+		"deliver":            "Delivering...",
+		"complete":           "Delivered✅",
+		"payment_type_msg":   "Choose payment type:",
+		"cash":               "💵Cash",
+		"card":               "💳Card",
+		"thanks":             "Thank you!",
+		"no_need":            "No need location❗",
+		"succsess":           "Your order has been successfully placed\n",
+		"our_card":           "\nMake payment to this card 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"closed_msg":         "We are closed for today.😔",
 	},
 	"ru": {
-		"welcome":         "Добро пожаловать! Пожалуйста, введите ваше имя:",
-		"phone":           "Пожалуйста, введите ваш номер телефона (например, +998901234567):",
-		"done":            "Регистрация завершена! Добро пожаловать, ",
-		"exists":          "Вы уже зарегистрированы!",
-		"error":           "Произошла ошибка. Попробуйте позже.",
-		"language_prompt": "Пожалуйста, выберите ваш язык:",
-		"lang_btn":        "🇷🇺Язык",
-		"order_btn":       "🛍Сделать заказ",
-		"get_phone":       "📱 Поделитесь своим номером телефона",
-		"my_orders":       "Мои заказы",
-		"about_us":        "О нас",
-		"back":            "⬅️Назад",
-		"cart":            "🛒Корзина",
-		"add_to_cart":     "📥Добавить в корзину",
-		"clear_cart":      "♻️ Очистить",
-		"cart_messsage":   "*%s*\n\nЦена: %d UZS\nКоличество: %d\nИтого: %d UZS",
-		"empty_cart":      "Корзина пуста🛒🚫",
-		"user_menu":       "*Главное меню:*\n\nВыберите одну из следующих опций",
-		"cart_items_msg":  "*%s* x %d \\= %d сум\n",
-		"cart_total":      "\n*Итого:* %d сум",
-		"confirm_order":   "✅Подтвердить заказ",
-		"continue_order":  "🧾Продолжить заказ",
-		"added_to_cart":   "Товар добавлен в корзину✅",
-		"order_msg":       "📋 *Номер заказа*: %d \n🚕 *Способ доставки*: %s \n🏠 *Адрес*: %s \n📍 *Филиал*: %s \n\n	%s \n\n💵 *Товары*: %.2f \n🚚 *Стоимость доставки*: %.2f \n💰 *Итого*: %.2f",
-		"delivery":			"Доставка🚚",
-		"pickup":			"Самовывоз🚶‍♂️",
+		"welcome":            "Добро пожаловать! Пожалуйста, введите ваше имя:",
+		"phone":              "Пожалуйста, поделитесь своим номером телефона 👇",
+		"done":               "Регистрация завершена! Добро пожаловать, ",
+		"exists":             "Вы уже зарегистрированы!",
+		"error":              "Произошла ошибка. Попробуйте позже.",
+		"language_prompt":    "Пожалуйста, выберите ваш язык:",
+		"lang_btn":           "🇷🇺Язык",
+		"order_btn":          "🛍Сделать заказ",
+		"get_phone":          "📱 Поделитесь своим номером телефона",
+		"my_orders":          "Мои заказы",
+		"about_us":           "О нас",
+		"back":               "⬅️Назад",
+		"cart":               "🛒Корзина",
+		"add_to_cart":        "📥Добавить в корзину",
+		"clear_cart":         "♻️ Очистить",
+		"cart_messsage":      "*%s*\n\nЦена: %d UZS\nКоличество: %d\nИтого: %d UZS",
+		"empty_cart":         "Корзина пуста🛒🚫",
+		"user_menu":          "*Главное меню:*\n\nВыберите одну из следующих опций",
+		"cart_items_msg":     "*%s* x %d \\= %d сум\n",
+		"cart_total":         "\n*Итого:* %d сум",
+		"confirm_order":      "✅Подтвердить заказ",
+		"continue_order":     "🧾Продолжить заказ",
+		"added_to_cart":      "Товар добавлен в корзину✅",
+		"order_msg":          "📋 *Номер заказа*: %d \n🚕 *Способ доставки*: Доставка \n🏠 *Адрес*: %s \n📍 *Филиал*: Yakkasaroy  \n\n	%s \n\n💵 *Товары*: %v \n🚚 *Стоимость доставки*: %s \n💰 *Итого*: %v \nСпособ оплаты: %s \nСтатус: %s",
+		"delivery":           "Доставка🚚",
+		"pickup":             "Самовывоз🚶‍♂️",
+		"re-order":           "Перезаказать🔄",
+		"location_btn":       "📍 Отправить местоположение",
+		"location_msg":       "Пожалуйста, отправьте свое местоположение, нажав кнопку ниже 👇:",
+		"true-location":      "✅Верно",
+		"false-location":     "❌Неверно",
+		"check-location-msg": "Это верно?: \n%s",
+		"invalid_phone":      "Неверный тип номера телефона, пожалуйста, попробуйте еще раз 👇",
+		"pending":            "Ожидается оплата...",
+		"preparing":          "Готовится...",
+		"deliver":            "Доставляется...",
+		"complete":           "Доставлено✅",
+		"payment_type_msg":   "Выберите способ оплаты:",
+		"cash":               "💵Наличные",
+		"card":               "💳Карта",
+		"thanks":             "Спасибо!",
+		"no_need":            "Не нужно местоположение❗",
+		"succsess":           "Ваш заказ успешно оформлен\n",
+		"our_card":           "\nПроизведите оплату на эту карту 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"closed_msg":         "Сегодня заведение закрыто😔",
 	},
 	"uz": {
-		"welcome":         "Xush kelibsiz! Iltimos, ismingizni kiriting:",
-		"phone":           "Iltimos, telefon raqamingizni kiriting (masalan, +998901234567):",
-		"done":            "Ro'yxatdan o'tish yakunlandi! Xush kelibsiz, ",
-		"exists":          "Siz allaqachon ro'yxatdan o'tgansiz!",
-		"error":           "Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
-		"language_prompt": "Iltimos, o'zingizga qulay tilni tanlang:",
-		"lang_btn":        "🇺🇿Til",
-		"order_btn":       "🛍Buyurtma berish",
-		"get_phone":       "📱 Telefon raqamingizni ulashing",
-		"my_orders":       "Mening buyurtmalarim",
-		"about_us":        "Biz haqimizda",
-		"back":            "⬅️Orqaga",
-		"cart":            "🛒Savatcha",
-		"add_to_cart":     "📥Savatga qo'shish",
-		"clear_cart":      "♻️ Tozalash",
-		"cart_messsage":   "*%s*\n\nNarxi: %d UZS\nMiqdor: %d\nJami: %d UZS",
-		"empty_cart":      "Savatingiz bo'sh🛒🚫",
-		"user_menu":       "*Asosiy menyu:*\n\n Quyidagilardan birini tanlang:",
-		"cart_items_msg":  "*%s* x %d \\= %d so'm\n",
-		"cart_total":      "\n*Jami:* %d so'm",
-		"confirm_order":   "✅Buyurtmani tasdiqlash",
-		"continue_order":  "🧾Buyurtmani davom ettirish",
-		"added_to_cart":   "Mahsulot savatga qo'shildi✅",
-		"order_msg":       "📋 *Buyurtma raqami*: %d \n🚕 *Yetkazib berish turi*: %s \n🏠 *Manzil*: %s \n📍 *Filial*: %s \n\n%s \n\n💵 *Mahsulotlar*: %.2f \n🚚 *Yetkazib berish narxi*: %.2f \n💰 *Umumiy*: %.2f",
-		"delivery":			"Yetkazib berish🚚",
-		"pickup":			"Olib ketish🚶‍♂️",
+		"welcome":            "Xush kelibsiz! Iltimos, ismingizni kiriting:",
+		"phone":              "Iltimos, telefon raqamingizni ulashing 👇:",
+		"done":               "Ro'yxatdan o'tish yakunlandi! Xush kelibsiz, ",
+		"exists":             "Siz allaqachon ro'yxatdan o'tgansiz!",
+		"error":              "Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
+		"language_prompt":    "Iltimos, o'zingizga qulay tilni tanlang:",
+		"lang_btn":           "🇺🇿Til",
+		"order_btn":          "🛍Buyurtma berish",
+		"get_phone":          "📱 Telefon raqamingizni ulashing",
+		"my_orders":          "Mening buyurtmalarim",
+		"about_us":           "Biz haqimizda",
+		"back":               "⬅️Orqaga",
+		"cart":               "🛒Savatcha",
+		"add_to_cart":        "📥Savatga qo'shish",
+		"clear_cart":         "♻️ Tozalash",
+		"cart_messsage":      "*%s*\n\nNarxi: %d UZS\nMiqdor: %d\nJami: %d UZS",
+		"empty_cart":         "Savatingiz bo'sh🛒🚫",
+		"user_menu":          "*Asosiy menyu:*\n\n Quyidagilardan birini tanlang:",
+		"cart_items_msg":     "*%s* x %d \\= %d so'm\n",
+		"cart_total":         "\n*Jami:* %d so'm",
+		"confirm_order":      "✅Buyurtmani tasdiqlash",
+		"continue_order":     "🧾Buyurtmani davom ettirish",
+		"added_to_cart":      "Mahsulot savatga qo'shildi✅",
+		"order_msg":          "📋 *Buyurtma raqami*: %d \n🚕 *Yetkazib berish turi*: Yetkazib berish \n🏠 *Manzil*: %s \n📍 *Filial*: Yakkasaroy \n\n%s \n\n💵 *Mahsulotlar*: %v \n🚚 *Yetkazib berish narxi*: %s \n💰 *Umumiy*: %v \nTo\\'lov turi: %s \nStatus: %s",
+		"delivery":           "Yetkazib berish🚚",
+		"pickup":             "Olib ketish🚶‍♂️",
+		"re-order":           "Takrorlash🔄",
+		"location_btn":       "📍 Manzilni jo'natish",
+		"location_msg":       "Manzilingizni quyidagi tugma orqali yuboring 👇:",
+		"true-location":      "Togri ✅",
+		"false-location":     "Noto'g'ri ❌",
+		"check-location-msg": "Bu manzil to'g'rimi?: \n%s",
+		"invalid_phone":      "Telefon raqami turi noto‘g‘ri, qayta urinib ko‘ring👇",
+		"pending":            "To'lov kutilmoqda",
+		"preparing":          "Tayyorlanmoqda",
+		"deliver":            "Yo'lda",
+		"complete":           "Yetkazib berildi✅",
+		"payment_type_msg":   "To'lov turini tanlang:",
+		"cash":               "💵Naqd",
+		"card":               "💳Karta",
+		"thanks":             "Rahmat!",
+		"no_need":            "Joylashuvingiz hozir kerak emas❗",
+		"succsess":           "Buyurtmangiz muvaffaqiyatli qabul qilindi\n",
+		"our_card":           "\nTo'lovni shu kartaga qiling 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"closed_msg":         "Buguncha yopildik😔",
 	},
 }
 
@@ -103,14 +163,14 @@ var (
 	tempUserData = make(map[int64]map[string]string)
 )
 var (
-// userLanguage = make(map[int64]string) // Сохраняем выбранный язык пользователя
+	userLocation = make(map[int64]bool) // Сохраняем выбранный язык пользователя
 )
 
 func (h *handlers) HandleLanguage(c telebot.Context) error {
 	userID := c.Sender().ID
 
 	if h.storage.CheckAdmin(userID) {
-		return h.ShowAdminPanel(c)
+		return h.ShowCategoryMenu(c)
 	}
 
 	exists := h.storage.CheckUserExist(userID)
@@ -147,6 +207,7 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	userLocation[c.Sender().ID] = false
 	menu := &telebot.ReplyMarkup{}
 
 	// Define the buttons
@@ -174,6 +235,19 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	return c.EditOrSend(message, options)
 }
 
+func (h *handlers) SendAboutUs(c telebot.Context) error {
+	user_id := c.Sender().ID
+	lang, err := h.storage.GetLangUser(user_id)
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	markup := &telebot.ReplyMarkup{}
+	btnBack := markup.Data(Messages[lang]["back"], "back_to_user_menu")
+	markup.Inline(markup.Row(btnBack))
+
+	return c.Edit("MB DONER, Yakkasaroy tumani, 49/1", markup)
+}
+
 func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	userID := c.Sender().ID
 	username := c.Sender().Username
@@ -183,19 +257,32 @@ func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-
 	// Ensure registration step is initialized
 	name, err := h.storage.GetDataUserMessageStatus(userID)
 
 	if err != nil {
 		return c.Send(err.Error())
 	}
+
+	phone, err := helpers.FormatPhoneNumber(c.Message().Contact.PhoneNumber)
+
+	if err != nil {
+		keyboard := &telebot.ReplyMarkup{
+			ResizeKeyboard:  true, // Makes the keyboard fit nicely on screen
+			OneTimeKeyboard: true, // Hides the keyboard after it's used
+		}
+
+		phoneButton := keyboard.Contact(Messages[lang]["get_phone"])
+		keyboard.Reply(keyboard.Row(phoneButton))
+		return c.Send(Messages[lang]["invalid_phone"], keyboard)
+	}
+
 	// Save user to database
 	err = h.storage.RegisterUser(&models.User{
 		TelegramID:   userID,
 		Username:     username,
 		Name:         name,
-		Phone_Number: c.Message().Contact.PhoneNumber,
+		Phone_Number: phone,
 	})
 	if err != nil {
 		return c.Send(Messages[lang]["error"])
@@ -207,6 +294,134 @@ func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	c.Send(Messages[lang]["done"]+name, &telebot.ReplyMarkup{RemoveKeyboard: true})
 	h.ShowUserMenu(c)
 	return nil
+}
+
+func (h *handlers) RequestLocation(c telebot.Context) error {
+	c.Delete()
+
+	userID := c.Sender().ID
+
+	userLocation[userID] = true
+
+	lang, err := h.storage.GetLangUser(userID)
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
+	opened, err := h.storage.CheckOpened()
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
+	if !opened {
+		noloc := &telebot.ReplyMarkup{}
+		btnBack := noloc.Data(Messages[lang]["back"], "back_to_user_menu")
+		noloc.Inline(noloc.Row(btnBack))
+		return c.Send(Messages[lang]["closed_msg"], noloc)
+	}
+
+	// Create location button
+	btn := &telebot.ReplyMarkup{
+		ResizeKeyboard:  true,
+		OneTimeKeyboard: true,
+		// RemoveKeyboard:  true,
+	}
+
+	// Text:     "📍 Отправить местоположение",
+	// Create reply markup (keyboard)
+	loc := btn.Location(Messages[lang]["location_btn"])
+
+	btn.Reply(
+		btn.Row(loc),
+	)
+
+	option := &telebot.SendOptions{
+		ReplyMarkup: btn,
+		ParseMode:   telebot.ModeMarkdownV2,
+	}
+
+	// Send message
+	return c.Send(Messages[lang]["location_msg"], option)
+}
+
+func (h *handlers) HandleLocation(c telebot.Context) error {
+	userID := c.Sender().ID
+
+	// c.Bot().EditReplyMarkup(c.Message(), &telebot.ReplyMarkup{RemoveKeyboard: true})
+	lang, err := h.storage.GetLangUser(userID)
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	if !userLocation[userID] {
+		noloc := &telebot.ReplyMarkup{}
+		btnBack := noloc.Data(Messages[lang]["back"], "back_to_user_menu")
+		noloc.Inline(noloc.Row(btnBack))
+		return c.EditOrSend(Messages[lang]["no_need"], noloc)
+	}
+	var latitude float32
+	var longitude float32
+
+	loc := c.Message().Location
+	if loc != nil {
+		latitude = loc.Lat  // Latitude
+		longitude = loc.Lng // Longitude
+		// return c.Send("Received your location!\nLatitude: %f\nLongitude: %f", latitude, longitude)
+	} else {
+		return c.Send("Location not found")
+	}
+
+	c.Send(Messages[lang]["thanks"], &telebot.ReplyMarkup{
+		RemoveKeyboard: true,
+	})
+
+	// latitude := c
+	// longitude := c.
+
+	// Call geocoding API to get address
+	address, err := helpers.GetAddressFromCoordinates(latitude, longitude, lang)
+	if err != nil {
+		return err
+	}
+
+	menu := &telebot.ReplyMarkup{}
+	btnFalse := menu.Data(Messages[lang]["false-location"], "false-location")
+	btnTrue := menu.Data(Messages[lang]["true-location"], "true-location")
+	btnBack := menu.Data(Messages[lang]["back"], "show_cart")
+	menu.Inline(
+		menu.Row(btnFalse, btnTrue),
+		menu.Row(btnBack),
+	)
+	options := &telebot.SendOptions{
+		ParseMode:   telebot.ModeMarkdownV2,
+		ReplyMarkup: menu,
+	}
+
+	location := models.Location{
+		UserID:    userID,
+		Latitude:  latitude,
+		Longitude: longitude,
+		Name_uz:   address,
+		Name_ru:   address,
+		Name_en:   address,
+	}
+
+	_, err = h.storage.CreateLocation(&location)
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	userLocation[userID] = false
+
+	msg := helpers.EscapeMarkdownV2(fmt.Sprintf(Messages[lang]["check-location-msg"], address))
+
+	// Ask user to confirm the address
+	return c.EditOrSend(msg, options)
+}
+func (h *handlers) HandleFalseLocation(c telebot.Context) error {
+	h.storage.DeleteLocationByUserID(c.Sender().ID)
+	return h.RequestLocation(c)
 }
 
 func (h *handlers) ShowMenu(c telebot.Context) error {
@@ -233,28 +448,68 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 
 	switch lang {
 	case "uz":
-		message = " *MB Doner*\n\n            Menu\n\n"
-		for _, category := range cat.Categories {
-			buttons = append(buttons, menu.Row(menu.Data(category.Name_uz, "get_category_by_id", category.ID)))
+		message = " *MB Doner*\n\nMenu\n\n"
+		for i := 0; i < len(cat.Categories); i += 2 {
+			if i+1 < len(cat.Categories) {
+
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_uz, "get_category_by_id", cat.Categories[i].ID),
+					menu.Data(cat.Categories[i+1].Name_uz, "get_category_by_id", cat.Categories[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_uz, "get_category_by_id", cat.Categories[i].ID),
+				))
+			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
 	case "ru":
-		message = " *MB Doner*\n\n            Меню\n\n"
-		for _, category := range cat.Categories {
-			buttons = append(buttons, menu.Row(menu.Data(category.Name_ru, "get_category_by_id", category.ID)))
+		message = " *MB Doner*\n\nМеню\n\n"
+		for i := 0; i < len(cat.Categories); i += 2 {
+			if i+1 < len(cat.Categories) {
+
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_ru, "get_category_by_id", cat.Categories[i].ID),
+					menu.Data(cat.Categories[i+1].Name_ru, "get_category_by_id", cat.Categories[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_ru, "get_category_by_id", cat.Categories[i].ID),
+				))
+			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
 	case "en":
-		message = " *MB Doner*\n\n            Menu\n\n"
-		for _, category := range cat.Categories {
-			buttons = append(buttons, menu.Row(menu.Data(category.Name_en, "get_category_by_id", category.ID)))
+		message = " *MB Doner*\n\nMenu\n\n"
+		for i := 0; i < len(cat.Categories); i += 2 {
+			if i+1 < len(cat.Categories) {
+
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_en, "get_category_by_id", cat.Categories[i].ID),
+					menu.Data(cat.Categories[i+1].Name_en, "get_category_by_id", cat.Categories[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_en, "get_category_by_id", cat.Categories[i].ID),
+				))
+			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
 	default:
-		message = " *MB Doner*\n\n            Menu\n\n"
-		for _, category := range cat.Categories {
-			buttons = append(buttons, menu.Row(menu.Data(category.Name_uz, "get_category_by_id", category.ID)))
+		message = " *MB Doner*\n\nMenu\n\n"
+		for i := 0; i < len(cat.Categories); i += 2 {
+			if i+1 < len(cat.Categories) {
+
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_uz, "get_category_by_id", cat.Categories[i].ID),
+					menu.Data(cat.Categories[i+1].Name_uz, "get_category_by_id", cat.Categories[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_uz, "get_category_by_id", cat.Categories[i].ID),
+				))
+			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
 	}
 
@@ -268,7 +523,7 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 	}
 
 	// Send the message with buttons
-	c.Edit(message, options)
+	c.EditOrSend(message, options)
 	return nil
 }
 
@@ -314,6 +569,7 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 				))
 			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories", category)))
 	case "ru":
 		message = fmt.Sprintf("    *%s*   \n\nВыберите товары:", cat.Name_ru)
@@ -329,6 +585,7 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 				))
 			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories", category)))
 	case "en":
 		message = fmt.Sprintf("     *%s*   \n\nMahsulotlarni tanlang:", cat.Name_en)
@@ -343,6 +600,7 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 				))
 			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories")))
 	default:
 		message = fmt.Sprintf("    *%s*  \n\nMahsulotlarni tanlang:", cat.Name_uz)
@@ -358,6 +616,7 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 				))
 			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories")))
 	}
 
@@ -371,7 +630,7 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 		c.Delete()
 		return c.Send(message, option)
 	}
-	c.Edit(message, option)
+	c.EditOrSend(message, option)
 
 	return nil
 }
@@ -407,8 +666,8 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 
 	// Create markup for inline buttons
 	markup := &telebot.ReplyMarkup{}
-	btnDecrement := markup.Data("-", "decrement", strconv.Itoa(quantity))
-	btnIncrement := markup.Data("+", "increment", strconv.Itoa(quantity))
+	btnDecrement := markup.Data("➖", "decrement", strconv.Itoa(quantity))
+	btnIncrement := markup.Data("➕", "increment", strconv.Itoa(quantity))
 	btnAddToCart := markup.Data(Messages[lang]["add_to_cart"], "add_to_cart", strconv.Itoa(quantity), product.ID)
 	btnQuantity := markup.Data(strconv.Itoa(quantity), "ignore", strconv.Itoa(quantity))
 	// fmt.Println(len(product.Category_id))
@@ -521,8 +780,8 @@ func createCartButtons(cart *models.Cart, lang string) *telebot.ReplyMarkup {
 
 	// Add per-product buttons (+ and -)
 	for _, item := range cart.Items {
-		btnDecrement := markup.Data("-", "decrement_cart_product", item.ProductID)
-		btnIncrement := markup.Data("+", "increment_cart_product", item.ProductID)
+		btnDecrement := markup.Data("➖", "decrement_cart_product", item.ProductID)
+		btnIncrement := markup.Data("➕", "increment_cart_product", item.ProductID)
 		productButton := markup.Data(item.Name_uz, "ignore", item.ProductID)
 
 		rows = append(rows, markup.Row(btnDecrement, productButton, btnIncrement))
@@ -682,14 +941,13 @@ func (h *handlers) ClearCart(c telebot.Context) error {
 }
 
 func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
-	keyboard := &telebot.ReplyMarkup{
-		ResizeKeyboard:  true, // Makes the keyboard fit nicely on screen
-		OneTimeKeyboard: true, // Hides the keyboard after it's used
-	}
-
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
+	}
+	keyboard := &telebot.ReplyMarkup{
+		ResizeKeyboard:  true, // Makes the keyboard fit nicely on screen
+		OneTimeKeyboard: true, // Hides the keyboard after it's used
 	}
 
 	phoneButton := keyboard.Contact(Messages[lang]["get_phone"])
@@ -712,13 +970,21 @@ func (h *handlers) UserMsgStatus(c telebot.Context) error {
 	case "firstname":
 		h.storage.SetDataUserMessageStatus(userId, text)
 		return h.RequestPhoneNumber(c)
+	case "phone":
+
 	case "location":
 		h.storage.SetDataUserMessageStatus(userId, text)
 		return h.ShowMenu(c)
 	default:
+		if h.storage.CheckUserExist(userId) {
+			noloc := &telebot.ReplyMarkup{}
+			btnBack := noloc.Data(Messages["en"]["back"], "back_to_user_menu")
+			noloc.Inline(noloc.Row(btnBack))
+			return c.Send("Unknown status", noloc)
+		}
 		return c.Send("Unknown status")
 	}
-	// return nil
+	return nil
 }
 
 func (h *handlers) ChangeLanguage(c telebot.Context) error {
@@ -735,31 +1001,53 @@ func (h *handlers) ChangeLanguage(c telebot.Context) error {
 	menu.Inline(menu.Row(btnEN, btnRU, btnUZ))
 	c.Edit(Messages[lang]["language_prompt"], menu)
 
-	c.Bot().Handle(&telebot.InlineButton{Unique: "language_change"} ,func(ctx telebot.Context) error {
+	c.Bot().Handle(&telebot.InlineButton{Unique: "language_change"}, func(ctx telebot.Context) error {
 		lang := ctx.Callback().Data
 		h.storage.ChangeLangUser(userID, lang)
 		return h.ShowUserMenu(c)
 	})
+
 	return nil
 }
 
-func formatOrder(order models.OrderDetails, lang string) string {
+func formatOrder(order *models.OrderDetails, lang string) string {
 	items := ""
 	for _, item := range order.Items {
 		switch lang {
-			case "uz":
-				items = fmt.Sprintf("%s X %v \n", item.Name_uz, item.Quantity)
-			case "ru":
-				items = fmt.Sprintf("%s X %v \n", item.Name_ru, item.Quantity)
-			case "en":
-				items = fmt.Sprintf("%s X %v \n", item.Name_en, item.Quantity)
+		case "uz":
+			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
+		case "ru":
+			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
+		case "en":
+			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
 		}
 	}
 
-    return fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, order.Delivery_type, order.Address.Name_uz, order.Branch.Name, items, order.TotalPrice, order.Delivery_price, order.TotalPrice+order.Delivery_price)
+	switch order.Payment_type {
+	case "cash":
+		order.Payment_type = Messages[lang]["cash"]
+	case "card":
+		order.Payment_type = Messages[lang]["card"]
+	}
+
+	if order.Status == "pending" {
+		return fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, helpers.EscapeMarkdownV2(order.Address.Name_uz), items, order.TotalPrice, order.Delivery_type, order.TotalPrice, order.Payment_type, helpers.EscapeMarkdownV2(Messages[lang]["pending"])) + helpers.EscapeMarkdownV2(Messages[lang]["our_card"])
+	}
+	status := ""
+	switch order.Status {
+	case "preparing":
+		status = Messages[lang]["preparing"]
+	case "deliver":
+		status = Messages[lang]["deliver"]
+	case "completed":
+		status = Messages[lang]["complete"]
+	}
+
+	return fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, helpers.EscapeMarkdownV2(order.Address.Name_uz), items, order.TotalPrice, order.Delivery_type, order.TotalPrice, order.Payment_type, helpers.EscapeMarkdownV2(status))
 }
 
 func (h *handlers) ShowUserOrders(c telebot.Context) error {
+	c.Delete()
 	userID := c.Sender().ID
 	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
@@ -775,22 +1063,31 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	} else {
 		message = "Your orders:\n"
 		for _, order := range *orders {
-			message += fmt.Sprintf("Order ID: %v\nDate: %v\nTotal price: %v UZS\n\n", order.TotalPrice, order.Items, order.Status)
+			message += formatOrder(&order, lang)
+			menu := &telebot.ReplyMarkup{}
+			// btnReOrder := menu.Data(Messages[lang]["re-order"], "re_order", order.OrderID)
+			btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+			menu.Inline(
+				// menu.Row(btnReOrder),
+				menu.Row(btnBack),
+			)
+			options := &telebot.SendOptions{
+				ParseMode:   telebot.ModeMarkdownV2,
+				ReplyMarkup: menu,
+			}
+
+			c.Send(message, options)
+			message = ""
 		}
 	}
-	menu := &telebot.ReplyMarkup{}
-	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
-	menu.Inline(menu.Row(btnBack))
-	options := &telebot.SendOptions{
-		ParseMode:   telebot.ModeMarkdownV2,
-		ReplyMarkup: menu,
-	}
-	return c.Edit(message, options)
+	return nil
 }
 
 func (h *handlers) CompleteOrder(c telebot.Context) error {
 	userID := c.Sender().ID
-	orderID, err := h.storage.CreateOrder(userID)
+	payment_type := c.Callback().Data
+
+	orderID, err := h.storage.CreateOrder(userID, payment_type)
 	if err != nil {
 		return c.Send(err.Error())
 	}
@@ -802,7 +1099,7 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	message := fmt.Sprintf("Your order has been successfully placed. Order ID: %d, Total price: %v UZS", orderDetails, orderDetails.TotalPrice)
+	message := helpers.EscapeMarkdownV2(Messages[lang]["succsess"]) + formatOrder(orderDetails, lang)
 	menu := &telebot.ReplyMarkup{}
 	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
 	menu.Inline(menu.Row(btnBack))
@@ -810,8 +1107,138 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 		ParseMode:   telebot.ModeMarkdownV2,
 		ReplyMarkup: menu,
 	}
-	return c.Edit(message, options)
+	mark := message
+	err = c.Edit(mark, options)
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	return h.SendOrderToGroup(c, orderDetails)
+}
 
+func formatGroupOrder(order *models.OrderDetails, lang string) string {
+	items := ""
+	for _, item := range order.Items {
+		switch lang {
+		case "uz":
+			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
+		case "ru":
+			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
+		case "en":
+			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
+		}
+	}
+
+	switch order.Payment_type {
+	case "cash":
+		order.Payment_type = Messages[lang]["cash"]
+	case "card":
+		order.Payment_type = Messages[lang]["card"]
+	}
+	status := ""
+	switch order.Status {
+	case "pending":
+		status = Messages[lang]["pending"]
+	case "preparing":
+		status = Messages[lang]["preparing"]
+	case "deliver":
+		status = Messages[lang]["deliver"]
+	case "completed":
+		status = Messages[lang]["complete"]
+	}
+
+	msg := fmt.Sprintf("👆👆\n\\#*%d*\n\n📞 %s\n", order.Daily_order_number, helpers.EscapeMarkdownV2(order.PhoneNumber))
+
+	return msg + fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, helpers.EscapeMarkdownV2(order.Address.Name_uz), items, order.TotalPrice, order.Delivery_type, order.TotalPrice, order.Payment_type, helpers.EscapeMarkdownV2(status))
+}
+
+func (h *handlers) SendOrderToGroup(c telebot.Context, order *models.OrderDetails) error {
+	location := &telebot.Location{
+		Lat:  order.Address.Latitude,  // Example latitude (New York)
+		Lng: order.Address.Longitude, // Example longitude
+	}
+	_, err := c.Bot().Send(telebot.ChatID(groupID),location)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	var btnChangeStatus telebot.Btn
+	markup := &telebot.ReplyMarkup{}
+	switch order.Status {
+	case "pending":
+		btnChangeStatus = markup.Data("To'lov o'tdi✅", "change_status_preparing", order.OrderID)
+	case "preparing":
+		btnChangeStatus = markup.Data("Yo'lga Chiqdi🚶", "change_status_deliver", order.OrderID)
+	case "deliver":
+		btnChangeStatus = markup.Data("Yetkazib berildi✅", "change_status_completed", order.OrderID)
+	}
+	markup.Inline(markup.Row(btnChangeStatus))
+
+	fmt.Println(order.Status)
+
+	msg := formatGroupOrder(order, "uz")
+
+	option := &telebot.SendOptions{
+		ParseMode:   telebot.ModeMarkdownV2,
+		ReplyMarkup: markup,
+	}
+	_, err = c.Bot().Send(telebot.ChatID(groupID), msg, option)
+	return err
+}
+
+func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
+	orderID := c.Callback().Data
+	var btnChangeStatus telebot.Btn
+	markup := &telebot.ReplyMarkup{}
+	switch c.Callback().Unique {
+	case "change_status_preparing":
+		h.storage.ChangeOrderStatus(orderID, "preparing")
+		btnChangeStatus = markup.Data("Yo'lga chiqish", "change_status_deliver", orderID)
+	case "change_status_deliver":
+		h.storage.ChangeOrderStatus(orderID, "deliver")
+		btnChangeStatus = markup.Data("Yetkazib berildi✅", "change_status_completed", orderID)
+	case "change_status_completed":
+		h.storage.ChangeOrderStatus(orderID, "completed")
+	default:
+		return c.Send("Unknown status")
+	}
+	markup.Inline(markup.Row(btnChangeStatus))
+	order, err := h.storage.GetOrderDetailsByOrderID(orderID)
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	option := &telebot.SendOptions{
+		ParseMode:   telebot.ModeMarkdownV2,
+		ReplyMarkup: markup,
+	}
+	// Меняем статус заказа
+	updatedMsg := formatGroupOrder(order, "uz")
+
+	// Обновляем сообщение с новым статусом
+	err = c.Edit(updatedMsg, option)
+	if err != nil {
+		return c.Send("Failed to update order status")
+	}
+
+	return c.Respond(&telebot.CallbackResponse{Text: "Order status updated!"})
+}
+
+func (h *handlers) ChoosePaymentType(c telebot.Context) error {
+	c.Send(&telebot.ReplyMarkup{RemoveKeyboard: true})
+
+	c.Delete()
+	lang, err := h.storage.GetLangUser(c.Sender().ID)
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	markup := &telebot.ReplyMarkup{}
+	btnCash := markup.Data(Messages[lang]["cash"], "payment_type", "cash")
+	btnCard := markup.Data(Messages[lang]["card"], "payment_type", "card")
+
+	markup.Inline(markup.Row(btnCash, btnCard))
+	c.Send(Messages[lang]["payment_type_msg"], markup)
+
+	return nil
 }
 
 // return nil

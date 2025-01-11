@@ -94,18 +94,19 @@ type User struct {
 }
 
 type OrderDetails struct {
-	OrderID            uuid.UUID
+	OrderID            string
 	Daily_order_number int
 	Order_number       int
 	Address            *Location
 	Branch             *Branch
-	UserID             uuid.UUID
+	UserID             string
 	TotalPrice         int
 	Status             string
 	CreatedAt          string
 	Delivery_type      string
-	Delivery_price     int
 	Items              []*Item
+	PhoneNumber        string
+	Payment_type       string
 }
 
 type GetBranch struct {
@@ -144,7 +145,7 @@ type Cart struct {
 
 type Admin struct {
 	Id           string
-	Admin_id     string
+	Admin_id     int64
 	Phone_Number string
 	Password     string
 	Created_at   time.Time
@@ -169,10 +170,19 @@ type GetLocation struct {
 
 type Location struct {
 	ID        string
-	UserID    string
+	UserID    int64
 	Name_uz   string
 	Name_ru   string
 	Name_en   string
-	Latitude  float64
-	Longitude float64
+	Latitude  float32
+	Longitude float32
+}
+
+type GeocodingResponse struct {
+	Address struct {
+		Country string `json:"country"`
+		State   string `json:"state"`
+		Suburb  string `json:"suburb"`
+		Road    string `json:"road"`
+	} `json:"address"`
 }

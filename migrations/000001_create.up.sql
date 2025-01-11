@@ -49,6 +49,8 @@ CREATE TABLE order_items (
     quantity INT NOT NULL
 );
 
+
+
 CREATE TABLE categories (
     id UUID PRIMARY KEY,
     name_uz VARCHAR(255) NOT NULL UNIQUE,
@@ -89,15 +91,27 @@ CREATE TABLE locations (
     created_at TIMESTAMP DEFAULT NOW()
 )
 
-
 CREATE TABLE order_numbers (
     order_number INT DEFAULT 0,
     daily_order_number INT DEFAULT 0
 );
 
+CREATE TABLE branches (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255),
+    lat  FLOAT
+    lon  FLOAT
+)
+
+CREATE TABLE branch (
+    opened BOOLEAN DEFAULT false
+)
+
 INSERT INTO daily_order_numbers (order_number)
 VALUES (0);
 
+INSERT INTO branch (id, opened)
+VALUES ('a7c96256-961a-4694-8991-622851e75a96', false)
 
 INSERT INTO admins (id, telegram_id, phone_number, password)
 VALUES ('8812e235-470c-454d-81f2-457be3d0229e', 938606286, '+998883707083', 'password')
