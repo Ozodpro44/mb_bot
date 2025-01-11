@@ -185,3 +185,128 @@ VALUES  ('a1b2c3d4-e5f6-7890-1234-567890abcdef', 25000, 'completed', 'd1fd9fe2-9
 -- )
 -- -- Add index for performance on clientorder username
 -- CREATE INDEX IF NOT EXISTS idx_clientorder_username ON clientorder(username);
+
+CREATE TABLE admins(
+    id uuid NOT NULL,
+    telegram_id SERIAL NOT NULL,
+    phone_number varchar(64) NOT NULL,
+    password varchar(64) NOT NULL,
+    lang varchar(10) NOT NULL DEFAULT 'uz'::character varying,
+    PRIMARY KEY(id)
+);
+CREATE UNIQUE INDEX admins_phone_number_key ON admins USING btree ("phone_number");
+
+CREATE TABLE branch(
+    opened boolean DEFAULT false,
+    id uuid
+);
+
+CREATE TABLE cart(
+    product_id uuid,
+    quantity integer NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    user_id bigint NOT NULL DEFAULT 0,
+    CONSTRAINT cart_product_id_fkey FOREIGN key(product_id) REFERENCES products(id),
+    CONSTRAINT cart_quantity_check CHECK ((quantity > 0))
+);
+CREATE TABLE categories(
+    id uuid NOT NULL,
+    name_uz varchar(255) NOT NULL,
+    name_ru varchar(255) NOT NULL,
+    name_en varchar(255) NOT NULL,
+    abelety boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT now(),
+    PRIMARY KEY(id)
+);
+CREATE UNIQUE INDEX categories_name_uz_key ON categories USING btree ("name_uz");
+CREATE UNIQUE INDEX categories_name_ru_key ON categories USING btree ("name_ru");
+CREATE UNIQUE INDEX categories_name_en_key ON categories USING btree ("name_en");
+
+CREATE TABLE langs(
+    telegram_id bigint NOT NULL,
+    lang varchar(10) DEFAULT 'uz'::character varying,
+    PRIMARY KEY(telegram_id)
+);
+
+CREATE TABLE locations(
+    id uuid NOT NULL,
+    user_id uuid,
+    lat double precision,
+    lon double precision,
+    name_uz varchar(255) NOT NULL,
+    name_ru varchar(255) NOT NULL,
+    name_en varchar(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    PRIMARY KEY(id),
+    CONSTRAINT locations_user_id_fkey FOREIGN key(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE menu(
+    item_id SERIAL NOT NULL,
+    name varchar(100) NOT NULL,
+    price numeric(10,2) NOT NULL,
+    PRIMARY KEY(item_id)
+);
+
+CREATE TABLE order_numbers(
+    order_number integer DEFAULT 0,
+    daily_order_number integer DEFAULT 0
+);
+
+CREATE TABLE orders(
+    id uuid NOT NULL,
+    daily_order_number integer NOT NULL,
+    order_number bigint NOT NULL,
+    total_price integer NOT NULL,
+    status varchar(50) DEFAULT 'pending'::character varying,
+    created_at timestamp without time zone DEFAULT now(),
+    user_id uuid,
+    lon double precision,
+    lat double precision,
+    adress varchar(255),
+    payment_type varchar(35) DEFAULT 'cash'::character varying,
+    delivery_price varchar(20) DEFAULT 0,
+    phone_number varchar(25),
+    PRIMARY KEY(id),
+    CONSTRAINT orders_user_id_fkey FOREIGN key(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE products(
+    id uuid NOT NULL,
+    name_uz varchar(255) NOT NULL,
+    name_ru varchar(255) NOT NULL,
+    name_en varchar(255) NOT NULL,
+    price integer NOT NULL,
+    photo varchar(255) NOT NULL,
+    description text,
+    created_at timestamp without time zone DEFAULT now(),
+    categories_id uuid,
+    is_active boolean DEFAULT true,
+    stock integer NOT NULL DEFAULT 0,
+    PRIMARY KEY(id),
+    CONSTRAINT products_categories_id_fkey FOREIGN key(categories_id) REFERENCES categories(id)
+);
+CREATE UNIQUE INDEX products_name_uz_key ON products USING btree ("name_uz");
+CREATE UNIQUE INDEX products_name_ru_key ON products USING btree ("name_ru");
+CREATE UNIQUE INDEX products_name_en_key ON products USING btree ("name_en");
+
+CREATE TABLE user_msg_status(
+    telegram_id bigint,
+    status varchar(255) DEFAULT '1'::character varying,
+    "data" varchar(255) DEFAULT '0'::character varying
+);
+
+CREATE TABLE users(
+    id uuid NOT NULL,
+    telegram_id bigint NOT NULL,
+    username varchar(100),
+    first_name varchar(100),
+    phone_number varchar(20),
+    created_at timestamp without time zone DEFAULT now(),
+    lat double precision,
+    lon double precision,
+    adress varchar(255),
+    PRIMARY KEY(id)
+);
+CREATE UNIQUE INDEX users_telegram_id_key ON users USING btree ("telegram_id");
+CREATE UNIQUE INDEX users_phone_number_key ON users USING btree ("phone_number");
