@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Storage) CheckAdmin(telegramID int64) bool {
-	son := 0 
+	son := 0
 	err := s.db.QueryRow("SELECT 1 FROM admins WHERE telegram_id = $1", telegramID).Scan(&son)
 	if err == sql.ErrNoRows {
 		return false

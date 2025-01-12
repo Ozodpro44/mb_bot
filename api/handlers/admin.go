@@ -365,7 +365,7 @@ func (h *handlers) AddProductToCategory(c telebot.Context, product *models.Produ
 
 	categories, err := h.storage.GetAllCategories()
 	if err != nil {
-		return c.Send(err.Error())
+		return c.Send(err)
 	}
 
 	// var buttons []telebot.InlineButton

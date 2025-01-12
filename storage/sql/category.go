@@ -3,6 +3,7 @@ package postgres
 import (
 	"bot/models"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ func (s *Storage) CreateCategory(category *models.Category) error {
 }
 
 func (s *Storage) GetAllCategories() (*models.Categories, error) {
+	log.Println("Categoty?")
 	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, abelety, created_at FROM categories ORDER BY name_uz ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch categories: %v", err)
@@ -31,6 +33,7 @@ func (s *Storage) GetAllCategories() (*models.Categories, error) {
 		}
 		categories.Categories = append(categories.Categories, &category)
 	}
+	log.Println(err)
 
 	return &categories, nil
 }
@@ -54,7 +57,7 @@ func (s *Storage) UpdateCategoryById(category *models.Category) (*models.Categor
 }
 
 func (s *Storage) UpdateAbeletyCategoryById(category_id string, abelety bool) error {
-	_, err := s.db.Exec("UPDATE categories SET abelety = &1 WHERE id = $2",abelety, category_id)
+	_, err := s.db.Exec("UPDATE categories SET abelety = &1 WHERE id = $2", abelety, category_id)
 	if err != nil {
 		return err
 	}

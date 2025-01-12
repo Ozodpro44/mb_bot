@@ -997,16 +997,32 @@ func (h *handlers) ChangeLanguage(c telebot.Context) error {
 	btnEN := menu.Data("English🇬🇧", "language_change", "en")
 	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
+	btnBack := menu.Data(Messages["en"]["back"], "back_to_user_menu")
 
-	menu.Inline(menu.Row(btnEN, btnRU, btnUZ))
+	menu.Inline(
+		menu.Row(btnEN, btnRU, btnUZ),
+		menu.Row(btnBack),
+	)
 	c.Edit(Messages[lang]["language_prompt"], menu)
 
-	c.Bot().Handle(&telebot.InlineButton{Unique: "language_change"}, func(ctx telebot.Context) error {
-		lang := ctx.Callback().Data
-		h.storage.ChangeLangUser(userID, lang)
-		return h.ShowUserMenu(c)
-	})
+	return nil
+}
 
+func (h *handlers) SetChangeLang(c telebot.Context) error {
+	userID := c.Sender().ID
+	lang := c.Callback().Data
+	h.storage.ChangeLangUser(userID, lang)
+	menu := &telebot.ReplyMarkup{}
+	btnEN := menu.Data("English🇬🇧", "language_change", "en")
+	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
+	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
+	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+
+	menu.Inline(
+		menu.Row(btnEN, btnRU, btnUZ),
+		menu.Row(btnBack),
+	)
+	c.Edit(Messages[lang]["language_prompt"], menu)
 	return nil
 }
 
@@ -1015,11 +1031,11 @@ func formatOrder(order *models.OrderDetails, lang string) string {
 	for _, item := range order.Items {
 		switch lang {
 		case "uz":
-			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
+			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
 		case "ru":
-			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
+			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
 		case "en":
-			items = fmt.Sprintf("%s X %v \n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
+			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
 		}
 	}
 
@@ -1059,7 +1075,18 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	}
 	message := ""
 	if len(*orders) == 0 {
-		message = "You have no orders yet."
+		menu := &telebot.ReplyMarkup{}
+		btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+		menu.Inline(
+			// menu.Row(btnReOrder),
+			menu.Row(btnBack),
+		)
+		options := &telebot.SendOptions{
+			ParseMode:   telebot.ModeMarkdownV2,
+			ReplyMarkup: menu,
+		}
+		message = "❌❌❌"
+		c.Send(message, options)
 	} else {
 		message = "Your orders:\n"
 		for _, order := range *orders {
@@ -1120,11 +1147,11 @@ func formatGroupOrder(order *models.OrderDetails, lang string) string {
 	for _, item := range order.Items {
 		switch lang {
 		case "uz":
-			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
+			items += fmt.Sprintf("*%s*  X  *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity)
 		case "ru":
-			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
+			items += fmt.Sprintf("*%s*  X  *%v \n\n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
 		case "en":
-			items = fmt.Sprintf("%s  X  %v \n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
+			items += fmt.Sprintf("*%s*  X  *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
 		}
 	}
 
@@ -1153,10 +1180,10 @@ func formatGroupOrder(order *models.OrderDetails, lang string) string {
 
 func (h *handlers) SendOrderToGroup(c telebot.Context, order *models.OrderDetails) error {
 	location := &telebot.Location{
-		Lat:  order.Address.Latitude,  // Example latitude (New York)
+		Lat: order.Address.Latitude,  // Example latitude (New York)
 		Lng: order.Address.Longitude, // Example longitude
 	}
-	_, err := c.Bot().Send(telebot.ChatID(groupID),location)
+	_, err := c.Bot().Send(telebot.ChatID(groupID), location)
 	if err != nil {
 		fmt.Println(err)
 		return err

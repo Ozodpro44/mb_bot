@@ -37,7 +37,7 @@ func Api(o *Options) {
 	bot, err := telebot.NewBot(o.Tg)
 	if err != nil {
 		log.Fatal(err)
-		return 
+		return
 	}
 	h := handlers.NewHandler(handlers.Handlers{Storage: o.Storage})
 
@@ -113,79 +113,78 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "add_admin"}, h.AddAdmin)
 
+	bot.Handle(&telebot.InlineButton{Unique: "language_change"}, h.SetChangeLang)
+
 	bot.Start()
 
 }
-	
-	
-	
-	
-	// updates := o.Tg.GetUpdatesText()
 
-	// update := tgbotapi.Update{}
+// updates := o.Tg.GetUpdatesText()
 
-	// var msgId int
-	// var ChatID int64
+// update := tgbotapi.Update{}
 
-	// var wg sync.WaitGroup
+// var msgId int
+// var ChatID int64
 
-	// for update = range *updates {
-	// 	wg.Add(1)
-	// 	go func(update tgbotapi.Update) {
-	// 		wg.Done()
-	// 		if update.Message == nil {
-	// 			switch update.CallbackQuery.Data {
-	// 			case adminOrder:
-	// 				o.Tg.DeleteMessage(ChatID, msgId)
-	// 				defer wg.Done()
-	// 			case adminClients:
-	// 				o.Tg.DeleteMessage(ChatID, msgId)
+// var wg sync.WaitGroup
 
-	// 			case adminSave:
-	// 				o.Tg.DeleteMessage(ChatID, msgId)
+// for update = range *updates {
+// 	wg.Add(1)
+// 	go func(update tgbotapi.Update) {
+// 		wg.Done()
+// 		if update.Message == nil {
+// 			switch update.CallbackQuery.Data {
+// 			case adminOrder:
+// 				o.Tg.DeleteMessage(ChatID, msgId)
+// 				defer wg.Done()
+// 			case adminClients:
+// 				o.Tg.DeleteMessage(ChatID, msgId)
 
-	// 			case adminExit:
-	// 				o.Tg.DeleteMessage(ChatID, msgId)
-	// 			default:
-	// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.Chat.ID)
-	// 			}
-	// 		} else if update.CallbackQuery == nil {
-	// 			switch update.Message.Text {
+// 			case adminSave:
+// 				o.Tg.DeleteMessage(ChatID, msgId)
 
-	// 			case "/add":
-	// 				// text = msgHelp
-	// 				h.SendToAllUser(updates, update.Message.From.ID)
-	// 			case StartCmd:
-	// 				h.RegisterUser(updates, update.Message.From.ID)
-	// 				// h.GetProductsByCateg(ChatID,12, 2,12.5)
-	// 				// button := tgbotapi.KeyboardButton{
-	// 				// 	Text:            "Share Phone Number",
-	// 				// 	RequestContact:  true, // This makes the button request the user's contact
-	// 				// }
+// 			case adminExit:
+// 				o.Tg.DeleteMessage(ChatID, msgId)
+// 			default:
+// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.Chat.ID)
+// 			}
+// 		} else if update.CallbackQuery == nil {
+// 			switch update.Message.Text {
 
-	// 				// keyboard := tgbotapi.NewReplyKeyboard(
-	// 				// 	[]tgbotapi.KeyboardButton{button},
-	// 				// )
+// 			case "/add":
+// 				// text = msgHelp
+// 				h.SendToAllUser(updates, update.Message.From.ID)
+// 			case StartCmd:
+// 				h.RegisterUser(updates, update.Message.From.ID)
+// 				// h.GetProductsByCateg(ChatID,12, 2,12.5)
+// 				// button := tgbotapi.KeyboardButton{
+// 				// 	Text:            "Share Phone Number",
+// 				// 	RequestContact:  true, // This makes the button request the user's contact
+// 				// }
 
-	// 				// msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Please share your phone number:")
-	// 				// msg.ReplyMarkup = keyboard
+// 				// keyboard := tgbotapi.NewReplyKeyboard(
+// 				// 	[]tgbotapi.KeyboardButton{button},
+// 				// )
 
-	// 				// o.Tg.SendReplyKeyboard(msg.Text, update.Message.Chat.ID, keyboard)
-	// 				// h.RegisterUser(update.SentFrom().ID, update.SentFrom().UserName, update.SentFrom().FirstName)
-	// 			case AdminCmd:
+// 				// msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Please share your phone number:")
+// 				// msg.ReplyMarkup = keyboard
 
-	// 			default:
-	// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.From.ID)
-	// 			}
-	// 			log.Printf("got new command '%s' from '%s", update.SentFrom().UserName, update.Message.Text)
+// 				// o.Tg.SendReplyKeyboard(msg.Text, update.Message.Chat.ID, keyboard)
+// 				// h.RegisterUser(update.SentFrom().ID, update.SentFrom().UserName, update.SentFrom().FirstName)
+// 			case AdminCmd:
 
-	// 			ChatID = update.Message.Chat.ID
+// 			default:
+// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.From.ID)
+// 			}
+// 			log.Printf("got new command '%s' from '%s", update.SentFrom().UserName, update.Message.Text)
 
-	// 		}
-	// 	}(update)
-	// 	updates.Clear()
+// 			ChatID = update.Message.Chat.ID
 
-	// 	wg.Wait()
+// 		}
+// 	}(update)
+// 	updates.Clear()
 
-	// }
+// 	wg.Wait()
+
+// }
 // }

@@ -20,7 +20,6 @@ func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error)
 	var address string
 	var phone string
 
-
 	err := s.db.QueryRow(`
 		SELECT id, phone_number
 		FROM users
@@ -46,15 +45,13 @@ func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error)
 	err = s.db.QueryRow(`
 		SELECT lat,lon,name_uz
 		FROM locations
-		WHERE user_id = $1`,user_id).Scan(&lat,&lon,&address)
-		
+		WHERE user_id = $1`, user_id).Scan(&lat, &lon, &address)
+
 	if err != nil {
 		return "", err
 	}
 
 	log.Println("location succsefully fetched in CreateOrder")
-
-
 
 	// Calculate total price
 	rows, err := s.db.Query(`
@@ -93,19 +90,19 @@ func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error)
 	order_id := uuid.New()
 
 	delivery := "0"
-	if !helpers.Haversine(41.275030,69.264482,float64(lat),float64(lon)){
+	if !helpers.Haversine(41.275030, 69.264482, float64(lat), float64(lon)) {
 		delivery = "Yandex Dostavka"
 	}
 	var status string
 	if payment_type == "card" {
 		status = "pending"
-	}else {
+	} else {
 		status = "preparing"
 	}
 
 	// Create order
 	err = tx.QueryRow("INSERT INTO orders (id,user_id, total_price, order_number, daily_order_number, adress, lat, lon, delivery_price, phone_number,status,payment_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
-		order_id, user_id, totalPrice, order_number+1, daily_order_number+1, address, lat, lon,	delivery, phone, status, payment_type).Scan(&orderID)
+		order_id, user_id, totalPrice, order_number+1, daily_order_number+1, address, lat, lon, delivery, phone, status, payment_type).Scan(&orderID)
 	if err != nil {
 		tx.Rollback()
 		return "", err
@@ -116,10 +113,10 @@ func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error)
 	// Move cart items to order_items
 	_, err = tx.Exec(`
         INSERT INTO order_items (id, order_id, product_id, quantity)
-        SELECT $1, $2, c.product_id, c.quantity
+        SELECT gen_random_uuid(), $1, c.product_id, c.quantity
         FROM cart c
         JOIN products p ON c.product_id = p.id
-        WHERE c.user_id = $3`, uuid.New(), orderID, userID)
+        WHERE c.user_id = $2`, orderID, userID)
 	if err != nil {
 		tx.Rollback()
 		return "", err
@@ -192,7 +189,7 @@ func (s *Storage) GetOrderDetails(orderID string) (*[]models.OrderDetails, error
 			return &orders, fmt.Errorf("failed to scan order item: %v", err)
 		}
 		orders = append(orders, order)
-		orders[0].Items = append(orders[0].Items, &item)
+		//orders[0].Items = append(orders[0].Items, &item)
 
 	}
 
@@ -204,7 +201,6 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 	var order models.OrderDetails
 	user_id := uuid.UUID{}
 	var adress models.Location
-
 
 	err := s.db.QueryRow(`
 		SELECT id
@@ -242,7 +238,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 		if err != nil {
 			return &orders, fmt.Errorf("failed to fetch order items: %v", err)
 		}
-		defer rows_items.Close()
+
 		for rows_items.Next() {
 			items := models.Item{}
 			err = rows_items.Scan(&items.Name_uz, &items.Name_ru, &items.Name_en, &items.Quantity)
@@ -253,6 +249,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 		}
 		order.Address = &adress
 		orders = append(orders, order)
+		defer rows_items.Close()
 	}
 
 	return &orders, nil
@@ -293,7 +290,7 @@ func (s *Storage) GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails
 	return order, nil
 
 }
-	
+
 func (s *Storage) ChangeOrderStatus(orderID string, status string) (string, error) {
 	_, err := s.db.Exec("UPDATE orders SET status = $1 WHERE id = $2", status, orderID)
 	if err != nil {

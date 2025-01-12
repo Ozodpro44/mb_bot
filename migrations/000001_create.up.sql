@@ -46,7 +46,7 @@ CREATE TABLE order_items (
     id UUID PRIMARY KEY,
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-    quantity INT NOT NULL
+    quantity BIGINT NOT NULL
 );
 
 
@@ -254,7 +254,7 @@ CREATE TABLE order_numbers(
 );
 
 CREATE TABLE orders(
-    id uuid NOT NULL,
+    id uuid PRIMARY KEY  NOT NULL,
     daily_order_number integer NOT NULL,
     order_number bigint NOT NULL,
     total_price integer NOT NULL,
@@ -267,7 +267,6 @@ CREATE TABLE orders(
     payment_type varchar(35) DEFAULT 'cash'::character varying,
     delivery_price varchar(20) DEFAULT 0,
     phone_number varchar(25),
-    PRIMARY KEY(id),
     CONSTRAINT orders_user_id_fkey FOREIGN key(user_id) REFERENCES users(id)
 );
 
@@ -310,3 +309,5 @@ CREATE TABLE users(
 );
 CREATE UNIQUE INDEX users_telegram_id_key ON users USING btree ("telegram_id");
 CREATE UNIQUE INDEX users_phone_number_key ON users USING btree ("phone_number");
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
