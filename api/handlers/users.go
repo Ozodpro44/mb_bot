@@ -180,7 +180,7 @@ var Messages = map[string]map[string]string{
 		"confirm_order":      "✅Siparişi Onayla",
 		"continue_order":     "🧾Siparişi Devam Ettir",
 		"added_to_cart":      "Ürün sepete eklendi✅",
-		"order_msg":          "📋 *Sipariş numarası*: %d \n🚕 *Teslimat türü*: Teslimat \n🏠 *Adres*: %s \n📍 *Şube*: Yakkasaroy \n\n %s \n\n💵 *Ürünler*: %v \n🚚 *Teslimat ücreti*: %s \n💰 *Toplam*: %v \nÖdeme türü: %s \nDurum:",
+		"order_msg":          "📋 *Sipariş numarası*: %d \n🚕 *Teslimat türü*: Teslimat \n🏠 *Adres*: %s \n📍 *Şube*: Yakkasaroy \n\n %s \n\n💵 *Ürünler*: %v \n🚚 *Teslimat ücreti*: %s \n💰 *Toplam*: %v \nÖdeme türü: %s \nDurum: %s",
 		"delivery":           "Teslimat🚚",
 		"pickup":             "Çekim🚶‍♂️",
 		"re-order":           "Tekrar Sipariş Et🔄",
