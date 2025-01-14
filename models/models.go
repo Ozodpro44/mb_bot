@@ -56,6 +56,7 @@ type Product struct {
 	Name_uz     string
 	Name_ru     string
 	Name_en     string
+	Name_tr     string
 	Price       int
 	Photo       string
 	Description string
@@ -74,6 +75,7 @@ type Category struct {
 	Name_uz    string
 	Name_ru    string
 	Name_en    string
+	Name_tr    string
 	Abelety    bool
 	Created_at time.Time
 }
@@ -125,6 +127,7 @@ type Item struct {
 	Name_uz  string
 	Name_ru  string
 	Name_en  string
+	Name_tr  string
 	Quantity int
 	Price    int
 }
@@ -134,6 +137,7 @@ type Cart_item struct {
 	Name_uz   string
 	Name_ru   string
 	Name_en   string
+	Name_tr   string
 	Quantity  int
 	Price     int
 }
@@ -174,6 +178,7 @@ type Location struct {
 	Name_uz   string
 	Name_ru   string
 	Name_en   string
+	Name_tr   string
 	Latitude  float32
 	Longitude float32
 }

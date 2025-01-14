@@ -174,7 +174,7 @@ func (s *Storage) GetOrderDetails(orderID string) (*[]models.OrderDetails, error
 
 	// Fetch order items
 	rows, err := s.db.Query(`
-        SELECT p.name, oi.quantity, oi.price
+        SELECT p.name_uz, p.name_ru, p.name_en, p.name_tr, oi.quantity, oi.price
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id 
         WHERE oi.order_id = $1`, orderID)
@@ -185,7 +185,7 @@ func (s *Storage) GetOrderDetails(orderID string) (*[]models.OrderDetails, error
 
 	for rows.Next() {
 		var item models.Item
-		if err := rows.Scan(&item.Name_uz, &item.Name_ru, &item.Name_en, &item.Quantity, &item.Price); err != nil {
+		if err := rows.Scan(&item.Name_uz, &item.Name_ru, &item.Name_en, &item.Name_tr, &item.Quantity, &item.Price); err != nil {
 			return &orders, fmt.Errorf("failed to scan order item: %v", err)
 		}
 		orders = append(orders, order)
@@ -231,7 +231,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 		}
 		// Fetch order items
 		rows_items, err := s.db.Query(
-			`SELECT p.name_uz, p.name_ru, p.name_en, oi.quantity
+			`SELECT p.name_uz, p.name_ru, p.name_en, p.name_tr, oi.quantity
 			FROM order_items oi
 			JOIN products p ON oi.product_id = p.id
 			WHERE oi.order_id = $1`, order.OrderID)
@@ -241,7 +241,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 
 		for rows_items.Next() {
 			items := models.Item{}
-			err = rows_items.Scan(&items.Name_uz, &items.Name_ru, &items.Name_en, &items.Quantity)
+			err = rows_items.Scan(&items.Name_uz, &items.Name_ru, &items.Name_en, &items.Name_tr, &items.Quantity)
 			if err != nil {
 				return &orders, fmt.Errorf("failed to scan order items: %v", err)
 			}
@@ -269,7 +269,7 @@ func (s *Storage) GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails
 	}
 
 	rows, err := s.db.Query(`
-        SELECT p.name_uz, p.name_ru, p.name_en, oi.quantity, p.price
+        SELECT p.name_uz, p.name_ru, p.name_en, p.name_tr, oi.quantity, p.price
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = $1`, orderID)
@@ -280,7 +280,7 @@ func (s *Storage) GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails
 
 	for rows.Next() {
 		item := models.Item{}
-		if err := rows.Scan(&item.Name_uz, &item.Name_ru, &item.Name_en, &item.Quantity, &item.Price); err != nil {
+		if err := rows.Scan(&item.Name_uz, &item.Name_ru, &item.Name_en, &item.Name_tr, &item.Quantity, &item.Price); err != nil {
 			return nil, fmt.Errorf("failed to scan order item: %v", err)
 		}
 		order.Items = append(order.Items, &item)

@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Storage) CreateCategory(category *models.Category) error {
-	_, err := s.db.Exec("INSERT INTO categories (id, name_uz, name_ru, name_en, abelety, created_at) VALUES ($1, $2, $3, $4, $5, $6)", uuid.New(), category.Name_uz, category.Name_ru, category.Name_en, category.Abelety, time.Now())
+	_, err := s.db.Exec("INSERT INTO categories (id, name_uz, name_ru, name_en, name_tr, abelety, created_at) VALUES ($1, $2, $3, $4, $5, $6)", uuid.New(), category.Name_uz, category.Name_ru, category.Name_en, category.Name_tr, category.Abelety, time.Now())
 	if err != nil {
 		return fmt.Errorf("failed to add category: %v", err)
 	}
@@ -19,7 +19,7 @@ func (s *Storage) CreateCategory(category *models.Category) error {
 
 func (s *Storage) GetAllCategories() (*models.Categories, error) {
 	log.Println("Categoty?")
-	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, abelety, created_at FROM categories ORDER BY name_uz ASC")
+	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, name_tr, abelety, created_at FROM categories ORDER BY name_uz ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch categories: %v", err)
 	}
@@ -28,7 +28,7 @@ func (s *Storage) GetAllCategories() (*models.Categories, error) {
 	var categories models.Categories
 	for rows.Next() {
 		category := models.Category{}
-		if err := rows.Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Abelety, &category.Created_at); err != nil {
+		if err := rows.Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Name_tr, &category.Abelety, &category.Created_at); err != nil {
 			return nil, fmt.Errorf("failed to scan category: %v", err)
 		}
 		categories.Categories = append(categories.Categories, &category)
@@ -40,7 +40,7 @@ func (s *Storage) GetAllCategories() (*models.Categories, error) {
 
 func (s *Storage) GetCategoryByID(category_id string) (*models.Category, error) {
 	category := &models.Category{}
-	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, abelety FROM categories WHERE id = $1", category_id).Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Abelety)
+	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, name_tr, abelety FROM categories WHERE id = $1", category_id).Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Name_tr, &category.Abelety)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (s *Storage) GetCategoryByID(category_id string) (*models.Category, error) 
 }
 
 func (s *Storage) UpdateCategoryById(category *models.Category) (*models.Category, error) {
-	err := s.db.QueryRow("UPDATE categories SET name_uz = $1, name_ru = $2, name_en = $3 WHERE id = $4, RETURNING id, name_uz, name_ru, name_en, abelety", category.Name_uz, category.Name_ru, category.Name_en, category.ID).Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Abelety)
+	err := s.db.QueryRow("UPDATE categories SET name_uz = $1, name_ru = $2, name_en = $3 abelety = $4 WHERE id = $5, RETURNING id, name_uz, name_ru, name_en, name_tr, abelety", category.Name_uz, category.Name_ru, category.Name_en, category.Name_tr, category.ID).Scan(&category.ID, &category.Name_uz, &category.Name_ru, &category.Name_en, &category.Name_tr, &category.Abelety)
 	if err != nil {
 		return nil, err
 	}

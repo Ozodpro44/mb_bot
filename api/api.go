@@ -8,21 +8,21 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-const (
-	OrderCmd = "/orders"
-	HelpCmd  = "/help"
-	StartCmd = "/start"
-	AdminCmd = "/admin"
-)
-
-const (
-	adminSave    = "Dacha qoshish"
-	adminOrder   = "Dachalar"
-	adminClients = "Klientlar"
-	adminExit    = "Exit"
-)
+// const (
+// 	OrderCmd = "/orders"
+// 	HelpCmd  = "/help"
+// 	StartCmd = "/start"
+// 	AdminCmd = "/admin"
+// )
 
 // const (
+// 	adminSave    = "Dacha qoshish"
+// 	adminOrder   = "Dachalar"
+// 	adminClients = "Klientlar"
+// 	adminExit    = "Exit"
+// )
+
+// // const (
 // 	clientOrder     = "Dachalar"
 // 	clientPackage   = "Zakazlarim"
 // 	clientAdminCall = "Aloqa"

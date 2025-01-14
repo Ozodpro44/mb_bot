@@ -19,25 +19,32 @@ func FormatPhoneNumber(input string) (string, error) {
 	re := regexp.MustCompile(`\D`)
 	digits := re.ReplaceAllString(input, "")
 
-	// Check if the number is valid for Uzbekistan (+998)
-	if len(digits) == 12 && strings.HasPrefix(digits, "998") {
-		// Format as +998 xx xxx xx xx
-		return fmt.Sprintf("+%s %s %s %s %s",
-			digits[:3],         // +998
-			digits[3:5],        // xx
-			digits[5:8],        // xxx
-			digits[8:10],       // xx
-			digits[10:12]), nil // xx
-	} else if len(digits) == 9 {
-		// If a local number (without +998), assume Uzbekistan and prepend it
-		return fmt.Sprintf("+998 %s %s %s %s",
-			digits[:2],       // xx
-			digits[2:5],      // xxx
-			digits[5:7],      // xx
-			digits[7:9]), nil // xx
+	// Check for international format (starts with +, followed by country code)
+	if len(digits) >= 10 {
+		if strings.HasPrefix(digits, "998") && len(digits) == 12 {
+			// Uzbekistan format: +998 xx xxx xx xx
+			return fmt.Sprintf("+%s %s %s %s %s",
+				digits[:3],         // +998
+				digits[3:5],        // xx
+				digits[5:8],        // xxx
+				digits[8:10],       // xx
+				digits[10:12]), nil // xx
+		} else if strings.HasPrefix(digits, "90") && len(digits) == 12 {
+			// Turkey format: +90 xxx xxx xxxx
+			return fmt.Sprintf("+%s %s %s %s",
+				digits[:2],        // +90
+				digits[2:5],        // xxx
+				digits[5:8],        // xxx
+				digits[8:12]), nil  // xxxx
+		} else if len(digits) > 10 {
+			// General international format: +CC xxxx...xxxx
+			return fmt.Sprintf("+%s %s",
+				digits[:len(digits)-10], // Country code (variable length)
+				digits[len(digits)-10:]), nil
+		}
 	}
 
-	return "", fmt.Errorf("invalid phone number")
+	return "", fmt.Errorf("invalid or unsupported phone number format")
 }
 
 func OwnloadPhoto(fileURL, savePath string) error {
@@ -143,6 +150,8 @@ func GetAddressFromCoordinates2(lat, lon float32, lang string) (string, error) {
 		lang = "uz_UZ"
 	case "en":
 		lang = "en_US"
+	case "tr":
+		lang = "tr_TR"
 	default:
 		lang = "ru_RU"
 	}
@@ -195,6 +204,8 @@ func GetAddressFromCoordinates(lat, lon float32, lang string) (string, error) {
 		lang = "uz_UZ"
 	case "en":
 		lang = "en_US"
+	case "tr":
+		lang = "tr_TR"
 	default:
 		lang = "ru_RU"
 	}

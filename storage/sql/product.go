@@ -13,9 +13,9 @@ func (s *Storage) GetAllProducts() (*models.Products, error) {
 
 func (s *Storage) CreateProduct(product *models.Product) (*models.Product, error) {
 	_, err := s.db.Exec(`
-        INSERT INTO products (id, categories_id, name_uz, name_ru, name_en, price, photo, description, is_active)
+        INSERT INTO products (id, categories_id, name_uz, name_ru, name_en, name_tr, price, photo, description, is_active)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-		uuid.New(), product.Category_id, product.Name_uz, product.Name_ru, product.Name_en, product.Price, product.Photo, product.Description, product.Abelety)
+		uuid.New(), product.Category_id, product.Name_uz, product.Name_ru, product.Name_en, product.Name_tr, product.Price, product.Photo, product.Description, product.Abelety)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %v", err)
 	}
@@ -42,7 +42,7 @@ func (s *Storage) DeleteProductById(product_id string) error {
 
 func (s *Storage) GetProductsByCategory(categoryID string) (*models.Products, error) {
 	rows, err := s.db.Query(`
-        SELECT id, name_uz, name_ru, name_en, price, photo, description, categories_id
+        SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description, categories_id
         FROM products
         WHERE categories_id = $1 AND is_active = true
 		ORDER BY name_uz ASC`, categoryID)
@@ -53,7 +53,7 @@ func (s *Storage) GetProductsByCategory(categoryID string) (*models.Products, er
 	var products models.Products
 	for rows.Next() {
 		product := models.Product{}
-		if err := rows.Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Price, &product.Photo, &product.Description, &product.Category_id); err != nil {
+		if err := rows.Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description, &product.Category_id); err != nil {
 			return nil, fmt.Errorf("failed to scan product: %v", err)
 		}
 		products.Products = append(products.Products, &product)
@@ -64,7 +64,7 @@ func (s *Storage) GetProductsByCategory(categoryID string) (*models.Products, er
 
 func (s *Storage) GetProductById(product_id string) (*models.Product, error) {
 	product := &models.Product{}
-	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, price, photo, description, categories_id FROM products WHERE id = $1", product_id).Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Price, &product.Photo, &product.Description, &product.Category_id)
+	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description, categories_id FROM products WHERE id = $1", product_id).Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description, &product.Category_id)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (s *Storage) GetProductById(product_id string) (*models.Product, error) {
 
 func (s *Storage) GetProductByName(product_name string) (*models.Product, error) {
 	product := &models.Product{}
-	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, price, photo, description FROM products WHERE name_uz = $1 OR name_ru = $1 OR name_en = $1", product_name).Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Price, &product.Photo, &product.Description)
+	err := s.db.QueryRow("SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description FROM products WHERE name_uz = $1 OR name_ru = $1 OR name_en = $1", product_name).Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description)
 	if err != nil {
 		return nil, err
 	}

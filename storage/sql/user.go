@@ -149,9 +149,9 @@ func (s *Storage) CreateLocation(location *models.Location) (*models.Location, e
 	err = row.Scan(&exists)
 	if err == sql.ErrNoRows {
 		_, err = s.db.Exec(`
-			INSERT INTO locations (id, user_id, name_uz, name_ru, name_en, lat, lon)
+			INSERT INTO locations (id, user_id, name_uz, name_ru, name_en, name_tr, lat, lon)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			uuid.New(), user_id, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude)
+			uuid.New(), user_id, location.Name_uz, location.Name_ru, location.Name_en, location.Name_tr, location.Latitude, location.Longitude)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create location: %v", err)
 		}
@@ -160,8 +160,8 @@ func (s *Storage) CreateLocation(location *models.Location) (*models.Location, e
 		return nil, fmt.Errorf("failed to check location: %v", err)
 	} else {
 		_, err = s.db.Exec(`
-			UPDATE locations SET name_uz = $1, name_ru = $2, name_en = $3, lat = $4, lon = $5
-			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude, user_id)
+			UPDATE locations SET name_uz = $1, name_ru = $2, name_en = $3, name_tr = $4, lat = $5, lon = $6
+			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Name_tr, location.Latitude, location.Longitude, user_id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update location: %v", err)
 		}
@@ -180,7 +180,7 @@ func (s *Storage) DeleteLocationByUserID(telegramID int64) error {
 
 func (s *Storage) GetLocationByID(telegramId int64) (*models.Location, error) {
 	location := &models.Location{}
-	err := s.db.QueryRow("SELECT id, user_id, name_uz, name_ru, name_en, lat, lon FROM locations WHERE user_id = $1", telegramId).Scan(&location.ID, &location.UserID, &location.Name_uz, &location.Name_ru, &location.Name_en, &location.Latitude, &location.Longitude)
+	err := s.db.QueryRow("SELECT id, user_id, name_uz, name_ru, name_en, name_tr, lat, lon FROM locations WHERE user_id = $1", telegramId).Scan(&location.ID, &location.UserID, &location.Name_uz, &location.Name_ru, &location.Name_en, &location.Name_tr, &location.Latitude, &location.Longitude)
 	if err != nil {
 		return nil, err
 	}

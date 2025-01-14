@@ -156,6 +156,53 @@ var Messages = map[string]map[string]string{
 		"our_card":           "\nTo'lovni shu kartaga qiling 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
 		"closed_msg":         "Buguncha yopildik😔",
 	},
+	"tr": {
+		"welcome":            "Hoş geldiniz! Lütfen adınızı girin:",
+		"phone":              "Lütfen aşağıdaki düğmeden telefon numaranızı gönderin 👇:",
+		"done":               "Kayıt tamamlandı! Hoş geldin, ",
+		"exists":             "Zaten kayıtlısınız!",
+		"error":              "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+		"language_prompt":    "Lütfen dilinizi seçin:",
+		"lang_btn":           "🇹🇷Dil",
+		"order_btn":          "🛍Sipariş ver",
+		"get_phone":          "📱 Telefon numaranızı paylaşın",
+		"my_orders":          "Siparişlerim",
+		"about_us":           "Hakkımızda",
+		"back":               "⬅️Geri",
+		"cart":               "🛒Sepet",
+		"add_to_cart":        "📥Sepete ekle",
+		"clear_cart":         "♻️ Temizle",
+		"cart_messsage":      "*%s*\n\nFiyat: %d TL\nMiktar: %d\nToplam: %d TL",
+		"empty_cart":         "Sepetiniz boş🛒🚫",
+		"user_menu":          "*Ana Menü:*\n\nAşağıdaki seçeneklerden birini seçin",
+		"cart_items_msg":     "*%s* x %d \\= %d TL\n",
+		"cart_total":         "\n*Toplam:* %d TL",
+		"confirm_order":      "✅Siparişi Onayla",
+		"continue_order":     "🧾Siparişi Devam Ettir",
+		"added_to_cart":      "Ürün sepete eklendi✅",
+		"order_msg":          "📋 *Sipariş numarası*: %d \n🚕 *Teslimat türü*: Teslimat \n🏠 *Adres*: %s \n📍 *Şube*: Yakkasaroy \n\n %s \n\n💵 *Ürünler*: %v \n🚚 *Teslimat ücreti*: %s \n💰 *Toplam*: %v \nÖdeme türü: %s \nDurum:",
+		"delivery":           "Teslimat🚚",
+		"pickup":             "Çekim🚶‍♂️",
+		"re-order":           "Tekrar Sipariş Et🔄",
+		"location_btn":       "📍 Konum Gönder",
+		"location_msg":       "Lütfen aşağıdaki düğmeye konumunuzu gönderin 👇:",
+		"true-location":      "✅Doğru",
+		"false-location":     "❌Yanlış",
+		"check-location-msg": "Bu konum doğru mu?: \n%s",
+		"invalid_phone":      "Geçersiz telefon numarası tipi, lütfen tekrar deneyin 👇",
+		"pending":            "Ödeme bekleniyor...",
+		"preparing":          "Hazırlanıyor...",
+		"deliver":            "Teslim ediliyor...",
+		"complete":           "Teslim edildi✅",
+		"payment_type_msg":   "Ödeme türünü seçin:",
+		"cash":               "💵Nakit",
+		"card":               "💳Kart",
+		"thanks":             "Teşekkürler!",
+		"no_need":            "Konum gerekmiyor❗",
+		"succsess":           "Siparişiniz başarıyla oluşturuldu\n",
+		"our_card":           "\nBu karta ödeme yapın 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"closed_msg":         "Bugün için kapalıyız😔",
+	},
 }
 
 var (
@@ -183,8 +230,9 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 	btnEN := menu.Data("English🇬🇧", "language_add", "en")
 	btnRU := menu.Data("Русский🇷🇺", "language_add", "ru")
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_add", "uz")
+	btnTR := menu.Data("Türk🇹🇷", "language_add", "tr")
 
-	menu.Inline(menu.Row(btnEN, btnRU, btnUZ))
+	menu.Inline(menu.Row(btnEN, btnRU, btnUZ, btnTR))
 	return c.Send(Messages["en"]["language_prompt"], menu)
 
 }
@@ -495,6 +543,22 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 		}
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
+	case "tr":
+		message = " *MB Doner*\n\nMenü\n\n"
+		for i := 0; i < len(cat.Categories); i += 2 {
+			if i+1 < len(cat.Categories) {
+
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_tr, "get_category_by_id", cat.Categories[i].ID),
+					menu.Data(cat.Categories[i+1].Name_tr, "get_category_by_id", cat.Categories[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(cat.Categories[i].Name_tr, "get_category_by_id", cat.Categories[i].ID),
+				))
+			}
+		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_user_menu")))
 	default:
 		message = " *MB Doner*\n\nMenu\n\n"
 		for i := 0; i < len(cat.Categories); i += 2 {
@@ -602,6 +666,19 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 		}
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
 		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories")))
+	case "tr":
+		message = fmt.Sprintf("    *%s*  \n\nMahsulotlarni tanlang:", cat.Name_tr)
+		for i := 0; i < len(products.Products); i += 2 {
+			if i+1 < len(products.Products) {
+				buttons = append(buttons, menu.Row(
+					menu.Data(products.Products[i].Name_tr, "get_product_by_id", products.Products[i].ID),
+					menu.Data(products.Products[i+1].Name_tr, "get_product_by_id", products.Products[i+1].ID)))
+			} else {
+				buttons = append(buttons, menu.Row(
+					menu.Data(products.Products[i].Name_tr, "get_product_by_id", products.Products[i].ID),
+				))
+			}
+		}
 	default:
 		message = fmt.Sprintf("    *%s*  \n\nMahsulotlarni tanlang:", cat.Name_uz)
 		for i := 0; i < len(products.Products); i += 2 {
@@ -692,6 +769,9 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 	case "en":
 		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
 			helpers.EscapeMarkdownV2(product.Name_en), int(product.Price), quantity, totalPrice)
+	case "tr":
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
+			helpers.EscapeMarkdownV2(product.Name_tr), int(product.Price), quantity, totalPrice)
 	default:
 		message = fmt.Sprintf(Messages["uz"]["cart_messsage"],
 			helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
@@ -787,6 +867,19 @@ func formatCart(cart *models.Cart, lang string) string {
 			message += fmt.Sprintf(Messages[lang]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_en), item.Quantity, itemTotal)
 			totalPrice += itemTotal
 		}
+	case "tr":
+		for _, item := range cart.Items {
+			itemTotal := int(item.Price) * item.Quantity
+			message += fmt.Sprintf(Messages[lang]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_tr), item.Quantity, itemTotal)
+			totalPrice += itemTotal
+		}
+	default:
+		for _, item := range cart.Items {
+			itemTotal := int(item.Price) * item.Quantity
+			message += fmt.Sprintf(Messages["uz"]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity, itemTotal)
+			totalPrice += itemTotal
+		}
+
 	}
 	message += fmt.Sprintf(Messages[lang]["cart_total"], totalPrice)
 
@@ -1025,10 +1118,11 @@ func (h *handlers) ChangeLanguage(c telebot.Context) error {
 	btnEN := menu.Data("English🇬🇧", "language_change", "en")
 	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
+	btnTR := menu.Data("Türk🇹🇷", "language_change", "tr")
 	btnBack := menu.Data(Messages["en"]["back"], "back_to_user_menu")
 
 	menu.Inline(
-		menu.Row(btnEN, btnRU, btnUZ),
+		menu.Row(btnEN, btnRU, btnUZ, btnTR),
 		menu.Row(btnBack),
 	)
 	c.Edit(Messages[lang]["language_prompt"], menu)
@@ -1044,10 +1138,11 @@ func (h *handlers) SetChangeLang(c telebot.Context) error {
 	btnEN := menu.Data("English🇬🇧", "language_change", "en")
 	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
+	btnTR := menu.Data("Türk🇹🇷", "language_change", "tr")
 	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
 
 	menu.Inline(
-		menu.Row(btnEN, btnRU, btnUZ),
+		menu.Row(btnEN, btnRU, btnUZ, btnTR),
 		menu.Row(btnBack),
 	)
 	c.Edit(Messages[lang]["language_prompt"], menu)
@@ -1064,6 +1159,8 @@ func formatOrder(order *models.OrderDetails, lang string) string {
 			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
 		case "en":
 			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
+		case "tr":
+			items += fmt.Sprintf("*%s* X *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_tr), item.Quantity)
 		}
 	}
 
@@ -1167,7 +1264,7 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	return h.SendOrderToGroup(c, orderDetails)
+	return h.SendOrderToGroup(c.Bot(), orderDetails)
 }
 
 func formatGroupOrder(order *models.OrderDetails, lang string) string {
@@ -1180,6 +1277,8 @@ func formatGroupOrder(order *models.OrderDetails, lang string) string {
 			items += fmt.Sprintf("*%s*  X  *%v \n\n", helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity)
 		case "en":
 			items += fmt.Sprintf("*%s*  X  *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_en), item.Quantity)
+		case "tr":
+			items += fmt.Sprintf("*%s*  X  *%v* \n\n", helpers.EscapeMarkdownV2(item.Name_tr), item.Quantity)
 		}
 	}
 
@@ -1206,12 +1305,12 @@ func formatGroupOrder(order *models.OrderDetails, lang string) string {
 	return msg + fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, helpers.EscapeMarkdownV2(order.Address.Name_uz), items, order.TotalPrice, order.Delivery_type, order.TotalPrice, order.Payment_type, helpers.EscapeMarkdownV2(status))
 }
 
-func (h *handlers) SendOrderToGroup(c telebot.Context, order *models.OrderDetails) error {
+func (h *handlers) SendOrderToGroup(c *telebot.Bot, order *models.OrderDetails) error {
 	location := &telebot.Location{
 		Lat: order.Address.Latitude,  // Example latitude (New York)
 		Lng: order.Address.Longitude, // Example longitude
 	}
-	_, err := c.Bot().Send(telebot.ChatID(groupID), location)
+	_, err := c.Send(telebot.ChatID(groupID), location)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -1236,7 +1335,7 @@ func (h *handlers) SendOrderToGroup(c telebot.Context, order *models.OrderDetail
 		ParseMode:   telebot.ModeMarkdownV2,
 		ReplyMarkup: markup,
 	}
-	_, err = c.Bot().Send(telebot.ChatID(groupID), msg, option)
+	_, err = c.Send(telebot.ChatID(groupID), msg, option)
 	return err
 }
 
