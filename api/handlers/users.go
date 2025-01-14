@@ -679,6 +679,8 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 				))
 			}
 		}
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["cart"], "show_cart")))
+		buttons = append(buttons, menu.Row(menu.Data(Messages[lang]["back"], "back_to_categories")))
 	default:
 		message = fmt.Sprintf("    *%s*  \n\nMahsulotlarni tanlang:", cat.Name_uz)
 		for i := 0; i < len(products.Products); i += 2 {
