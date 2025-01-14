@@ -115,8 +115,9 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "language_change"}, h.SetChangeLang)
 
-	bot.Start()
+	log.Println("Bot started...")
 
+	bot.Start()
 }
 
 // updates := o.Tg.GetUpdatesText()

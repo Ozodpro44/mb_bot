@@ -681,8 +681,22 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 	)
 
 	// Format message
-	message := fmt.Sprintf(Messages[lang]["cart_messsage"],
-		product.Name_ru, int(product.Price), quantity, totalPrice)
+	var message string
+	switch lang {
+	case "uz":
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
+			helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
+	case "ru":
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
+			helpers.EscapeMarkdownV2(product.Name_ru), int(product.Price), quantity, totalPrice)
+	case "en":
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
+			helpers.EscapeMarkdownV2(product.Name_en), int(product.Price), quantity, totalPrice)
+	default:
+		message = fmt.Sprintf(Messages["uz"]["cart_messsage"],
+			helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
+	}
+	log.Println(message)
 
 	photoPath := product.Photo // Assuming product.PhotoID contains the filename without extension
 	if _, err := os.Stat(photoPath); os.IsNotExist(err) {
@@ -754,12 +768,26 @@ func formatCart(cart *models.Cart, lang string) string {
 	var message string
 	totalPrice := 0
 
-	for _, item := range cart.Items {
-		itemTotal := int(item.Price) * item.Quantity
-		message += fmt.Sprintf(Messages[lang]["cart_items_msg"], item.Name_uz, item.Quantity, itemTotal)
-		totalPrice += itemTotal
+	switch lang {
+	case "uz":
+		for _, item := range cart.Items {
+			itemTotal := int(item.Price) * item.Quantity
+			message += fmt.Sprintf(Messages[lang]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_uz), item.Quantity, itemTotal)
+			totalPrice += itemTotal
+		}
+	case "ru":
+		for _, item := range cart.Items {
+			itemTotal := int(item.Price) * item.Quantity
+			message += fmt.Sprintf(Messages[lang]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_ru), item.Quantity, itemTotal)
+			totalPrice += itemTotal
+		}
+	case "en":
+		for _, item := range cart.Items {
+			itemTotal := int(item.Price) * item.Quantity
+			message += fmt.Sprintf(Messages[lang]["cart_items_msg"], helpers.EscapeMarkdownV2(item.Name_en), item.Quantity, itemTotal)
+			totalPrice += itemTotal
+		}
 	}
-
 	message += fmt.Sprintf(Messages[lang]["cart_total"], totalPrice)
 
 	return message

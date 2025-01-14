@@ -29,11 +29,12 @@ func main() {
 	// token := telegram.NewUpdateTg(mustToken())
 
 	pref := telebot.Settings{
-		Token:  "7635834906:AAF-inAvfxCydE5o1mCtDHoDcI3_0j5bIo8",
-		Poller: &telebot.LongPoller{},
+		Token: "7635834906:AAF-inAvfxCydE5o1mCtDHoDcI3_0j5bIo8",
+		Poller: &telebot.Webhook{
+			Listen:   ":8080",
+			Endpoint: &telebot.WebhookEndpoint{PublicURL: "https://e724-185-203-238-154.ngrok-free.app"},
+		},
 	}
-
-	
 
 	api.Api(&api.Options{
 		Tg:      pref,

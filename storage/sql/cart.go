@@ -3,6 +3,7 @@ package postgres
 import (
 	"bot/models"
 	"fmt"
+	"log"
 )
 
 func (s *Storage) AddToCart(userID int64, productID string, quantity int) error {
@@ -19,7 +20,7 @@ func (s *Storage) AddToCart(userID int64, productID string, quantity int) error 
 			return fmt.Errorf("failed to update cart quantity")
 		}
 	} else {
-		
+
 		// Add to cart
 		_, err = s.db.Exec("INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)",
 			userID, productID, quantity)
@@ -27,7 +28,7 @@ func (s *Storage) AddToCart(userID int64, productID string, quantity int) error 
 			return fmt.Errorf("failed to insert product into cart")
 		}
 	}
-
+	log.Println("product added to cart" + productID)
 	return nil
 }
 

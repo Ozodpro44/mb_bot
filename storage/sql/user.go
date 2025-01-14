@@ -4,6 +4,8 @@ import (
 	"bot/models"
 	"database/sql"
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +19,7 @@ func (s *Storage) RegisterUser(user *models.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to register user: %v", err)
 	}
+	log.Println("user registered ." + user.Phone_Number + user.Name)
 	return nil
 }
 
@@ -35,7 +38,7 @@ func (s *Storage) GetAllUsers() (*models.Users, error) {
 		}
 		users.Users = append(users.Users, &user)
 	}
-
+	log.Println("all users got.")
 	return &users, nil
 }
 
@@ -46,6 +49,7 @@ func (s *Storage) SetLangUser(telegramID int64, lang string) (string, error) {
 	if err != nil {
 		return lang, fmt.Errorf("failed to set lang: %v", err)
 	}
+	log.Println("User lang set" + strconv.FormatInt(telegramID, 10))
 	return lang, nil
 
 }
@@ -59,6 +63,7 @@ func (s *Storage) GetLangUser(telegramID int64) (string, error) {
 	if err != nil {
 		return lang, fmt.Errorf("failed to fetch lang: %v", err)
 	}
+	log.Println("get user lang" + strconv.Itoa(int(telegramID)))
 	return lang, nil
 }
 
@@ -81,8 +86,8 @@ func (s *Storage) CheckUserExist(telegramID int64) bool {
 	if err != nil {
 		return false
 	}
+	log.Println("user exists checked...")
 	return exists
-
 }
 
 func (s *Storage) UserMessageStatus(telegramID int64, status string) (string, error) {
@@ -156,7 +161,7 @@ func (s *Storage) CreateLocation(location *models.Location) (*models.Location, e
 	} else {
 		_, err = s.db.Exec(`
 			UPDATE locations SET name_uz = $1, name_ru = $2, name_en = $3, lat = $4, lon = $5
-			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude, user_id,)
+			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Latitude, location.Longitude, user_id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update location: %v", err)
 		}
@@ -182,4 +187,3 @@ func (s *Storage) GetLocationByID(telegramId int64) (*models.Location, error) {
 	return location, nil
 
 }
-
