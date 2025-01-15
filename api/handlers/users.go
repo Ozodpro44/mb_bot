@@ -1094,7 +1094,7 @@ func (h *handlers) UserMsgStatus(c telebot.Context) error {
 		h.storage.SetDataUserMessageStatus(userId, text)
 		return h.RequestPhoneNumber(c)
 	case "phone":
-
+		
 	case "location":
 		h.storage.SetDataUserMessageStatus(userId, text)
 		return h.ShowMenu(c)
