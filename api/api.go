@@ -8,26 +8,6 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-// const (
-// 	OrderCmd = "/orders"
-// 	HelpCmd  = "/help"
-// 	StartCmd = "/start"
-// 	AdminCmd = "/admin"
-// )
-
-// const (
-// 	adminSave    = "Dacha qoshish"
-// 	adminOrder   = "Dachalar"
-// 	adminClients = "Klientlar"
-// 	adminExit    = "Exit"
-// )
-
-// // const (
-// 	clientOrder     = "Dachalar"
-// 	clientPackage   = "Zakazlarim"
-// 	clientAdminCall = "Aloqa"
-// )
-
 type Options struct {
 	Tg      telebot.Settings
 	Storage storage.Storage
@@ -48,6 +28,8 @@ func Api(o *Options) {
 	bot.Handle(telebot.OnContact, h.HandleRegistrationSteps)
 
 	bot.Handle(telebot.OnLocation, h.HandleLocation)
+
+	bot.Handle(telebot.OnPhoto, h.AdminPhotostatus)
 
 	// bot.Handle(&telebot.InlineButton{Unique: "payment_type"}, h.SetPaymentType)
 
@@ -81,7 +63,7 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "back_to_user_menu"}, h.ShowUserMenu)
 
-	bot.Handle(&telebot.InlineButton{Unique: "add_category"}, h.CreateCategory)
+	bot.Handle(&telebot.InlineButton{Unique: "add_category"}, h.CreateCategoryHandle)
 
 	bot.Handle(&telebot.InlineButton{Unique: "back_to_admin_menu"}, h.ShowCategoryMenu)
 
@@ -97,7 +79,7 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "get_product_by_id"}, h.ShowProductByID)
 
-	bot.Handle(&telebot.InlineButton{Unique: "category_menu"}, h.CreateCategory)
+	bot.Handle(&telebot.InlineButton{Unique: "category_menu"}, h.ShowCategoryMenu)
 
 	bot.Handle(&telebot.InlineButton{Unique: "change_status_preparing"}, h.ChangeOrderStatus)
 
@@ -105,87 +87,81 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "change_status_completed"}, h.ChangeOrderStatus)
 
+	bot.Handle(&telebot.InlineButton{Unique: "change_status_canceled"}, h.ChangeOrderStatus)
+
 	bot.Handle(&telebot.InlineButton{Unique: "get_all_users"}, h.GetUsers)
 
 	bot.Handle(&telebot.InlineButton{Unique: "close_day"}, h.CloseDay)
 
 	bot.Handle(&telebot.InlineButton{Unique: "open_day"}, h.OpenDay)
 
-	bot.Handle(&telebot.InlineButton{Unique: "add_admin"}, h.AddAdmin)
+	bot.Handle(&telebot.InlineButton{Unique: "add_admin"}, h.AddAdminHandle)
 
 	bot.Handle(&telebot.InlineButton{Unique: "language_change"}, h.SetChangeLang)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_category"}, h.ShowCategoryToUpdate)
+
+	bot.Handle(&telebot.InlineButton{Unique: "get_category_info"}, h.GetCategoryInfo)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_name_uz"}, h.UpdateCategoryNameUzHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_name_ru"}, h.UpdateCategoryNameRuHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_name_en"}, h.UpdateCategoryNameUzHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_name_tr"}, h.UpdateCategoryNameTrHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "back_to_cat_menu"}, h.ShowCategoryMenu)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_availability"}, h.UpdateCategoryAvailability)
+
+	bot.Handle(&telebot.InlineButton{Unique: "delete_cat"}, h.DeleteCategoryHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "delete_cat_yes"}, h.DeleteCategory)
+	
+	bot.Handle(&telebot.InlineButton{Unique: "back_to_admin_menu"}, h.ShowAdminPanel)
+
+	bot.Handle(&telebot.InlineButton{Unique: "product_menu"}, h.ShowProductMenu)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_product"}, h.ShowCategoriesToUpdateProducts)
+
+	bot.Handle(&telebot.InlineButton{Unique: "get_product_by_category"}, h.ShowProductsToUpdate)
+
+	bot.Handle(&telebot.InlineButton{Unique: "add_prod_cat"}, h.AddProductToCategory)
+
+	bot.Handle(&telebot.InlineButton{Unique: "get_product_info"}, h.GetProductInfo)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_name_uz"}, h.UpdateProductNameUzHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_name_ru"}, h.UpdateProductNameRuHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_name_en"}, h.UpdateProductNameEnHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_name_tr"}, h.UpdateProductNameTrHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_desc"}, h.UpdateProductDescHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_price"}, h.UpdateProductPriceHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_prod_availability"}, h.UpdateProductAvailability)
+
+	bot.Handle(&telebot.InlineButton{Unique: "delete_prod"}, h.DeleteProduct)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_cat_of_prod"}, h.UpdateProductCategoryHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "upd_prod_cat"}, h.UpdateProductCategory)
+
+	bot.Handle(&telebot.InlineButton{Unique: "cancel_order"}, h.CancelOrder)
+
+	bot.Handle(&telebot.InlineButton{Unique: "send_adds"}, h.SendAddToUsersHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "change_admin_lang"}, h.ChangeAdminLang)
+
+	bot.Handle(&telebot.InlineButton{Unique: "admin_lang"}, h.ChangeAdminLangHandle)
+
+	bot.Handle(&telebot.InlineButton{Unique: "update_photo_of_prod"}, h.UpdateProductPhotoHandle)
 
 	log.Println("Bot started...")
 
 	bot.Start()
 }
-
-// updates := o.Tg.GetUpdatesText()
-
-// update := tgbotapi.Update{}
-
-// var msgId int
-// var ChatID int64
-
-// var wg sync.WaitGroup
-
-// for update = range *updates {
-// 	wg.Add(1)
-// 	go func(update tgbotapi.Update) {
-// 		wg.Done()
-// 		if update.Message == nil {
-// 			switch update.CallbackQuery.Data {
-// 			case adminOrder:
-// 				o.Tg.DeleteMessage(ChatID, msgId)
-// 				defer wg.Done()
-// 			case adminClients:
-// 				o.Tg.DeleteMessage(ChatID, msgId)
-
-// 			case adminSave:
-// 				o.Tg.DeleteMessage(ChatID, msgId)
-
-// 			case adminExit:
-// 				o.Tg.DeleteMessage(ChatID, msgId)
-// 			default:
-// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.Chat.ID)
-// 			}
-// 		} else if update.CallbackQuery == nil {
-// 			switch update.Message.Text {
-
-// 			case "/add":
-// 				// text = msgHelp
-// 				h.SendToAllUser(updates, update.Message.From.ID)
-// 			case StartCmd:
-// 				h.RegisterUser(updates, update.Message.From.ID)
-// 				// h.GetProductsByCateg(ChatID,12, 2,12.5)
-// 				// button := tgbotapi.KeyboardButton{
-// 				// 	Text:            "Share Phone Number",
-// 				// 	RequestContact:  true, // This makes the button request the user's contact
-// 				// }
-
-// 				// keyboard := tgbotapi.NewReplyKeyboard(
-// 				// 	[]tgbotapi.KeyboardButton{button},
-// 				// )
-
-// 				// msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Please share your phone number:")
-// 				// msg.ReplyMarkup = keyboard
-
-// 				// o.Tg.SendReplyKeyboard(msg.Text, update.Message.Chat.ID, keyboard)
-// 				// h.RegisterUser(update.SentFrom().ID, update.SentFrom().UserName, update.SentFrom().FirstName)
-// 			case AdminCmd:
-
-// 			default:
-// 				o.Tg.SendMessages(msgUnknownCommand, update.Message.From.ID)
-// 			}
-// 			log.Printf("got new command '%s' from '%s", update.SentFrom().UserName, update.Message.Text)
-
-// 			ChatID = update.Message.Chat.ID
-
-// 		}
-// 	}(update)
-// 	updates.Clear()
-
-// 	wg.Wait()
-
-// }
-// }

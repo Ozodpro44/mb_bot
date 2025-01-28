@@ -191,3 +191,9 @@ type GeocodingResponse struct {
 		Road    string `json:"road"`
 	} `json:"address"`
 }
+
+type GetOrderMsg struct {
+	MsgID  int
+	UserID int64
+	Lang   string
+}

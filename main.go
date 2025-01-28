@@ -2,11 +2,11 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"bot/api"
 	postgres "bot/storage/sql"
 
-	// tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gopkg.in/telebot.v3"
 )
 
@@ -22,20 +22,14 @@ func main() {
 		log.Fatal("can't connect to storage: ", err)
 	}
 
-	// if err := s.Init(context.TODO()); err != nil {
-	// 	log.Fatal("can't init storage: ", err)
-	// }
-
-	// token := telegram.NewUpdateTg(mustToken())
-
+	
 	pref := telebot.Settings{
-		Token: "7635834906:AAF-inAvfxCydE5o1mCtDHoDcI3_0j5bIo8",
-		Poller: &telebot.Webhook{
-			Listen:   ":8080",
-			Endpoint: &telebot.WebhookEndpoint{PublicURL: "https://e724-185-203-238-154.ngrok-free.app"},
+		Token: "7917631019:AAHqy5biA_oTzvrXuavk8Je5CsdCnNVs-o0",
+		Poller: &telebot.LongPoller{
+			Timeout: 30 * time.Second,
 		},
 	}
-
+	
 	api.Api(&api.Options{
 		Tg:      pref,
 		Storage: s,
@@ -43,6 +37,16 @@ func main() {
 
 }
 
+// Token: "7635834906:AAF-inAvfxCydE5o1mCtDHoDcI3_0j5bIo8",
+// Poller: &telebot.Webhook{
+	// 	Listen:   ":8080",
+	// 	Endpoint: &telebot.WebhookEndpoint{PublicURL: "https://e724-185-203-238-154.ngrok-free.app"},
+// },
+// if err := s.Init(context.TODO()); err != nil {
+	// 	log.Fatal("can't init storage: ", err)
+	// }
+	
+	// token := telegram.NewUpdateTg(mustToken())
 // func mustToken() string {
 // 	token := flag.String(
 // 		"tg-bot-token",

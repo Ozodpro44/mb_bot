@@ -298,3 +298,68 @@ func (s *Storage) ChangeOrderStatus(orderID string, status string) (string, erro
 	}
 	return status, nil
 }
+
+func (s *Storage) SetOrderMsg(orderID string, msgID int) error {
+	_, err := s.db.Exec("UPDATE orders SET msg_id = $1 WHERE id = $2", msgID, orderID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) GetOrderMsg(orderID string) (*models.GetOrderMsg, error) {
+	msg := &models.GetOrderMsg{}
+	err := s.db.QueryRow(`
+		SELECT o.msg_id, u.telegram_id
+		FROM orders o
+		JOIN users u ON o.user_id = u.id
+		WHERE o.id = $1`, orderID).Scan(&msg.MsgID, &msg.UserID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	err = s.db.QueryRow(`
+		SELECT lang FROM langs
+		WHERE telegram_id = $1`, msg.UserID).Scan(&msg.Lang)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+func (s *Storage) DeleteOrderMsg(userID int64) error {
+	_, err := s.db.Exec("UPDATE orders SET msg_id = 0 WHERE user_id = $1", userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) SetOrderGroupMsg(orderID string, msgID int) error {
+	_, err := s.db.Exec("UPDATE orders SET group_msg_id = $1 WHERE id = $2", msgID, orderID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) GetOrderGroupMsg(orderID string) (int, error) {
+	var order_id int
+	err := s.db.QueryRow(`
+		SELECT o.group_msg_id
+		FROM orders o
+		JOIN users u ON o.user_id = u.id
+		WHERE o.id = $1`, orderID).Scan(&orderID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return order_id, nil
+}
+

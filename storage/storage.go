@@ -30,6 +30,12 @@ type Storage interface {
 	GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
 	GetOrderDetailsByOrderID(orderID string) (*models.OrderDetails, error)
 	ChangeOrderStatus(orderID string, status string) (string, error)
+	SetOrderMsg(orderID string, msgID int) error
+	GetOrderMsg(orderID string) (*models.GetOrderMsg, error)
+	DeleteOrderMsg(userID int64) error
+	SetOrderGroupMsg(orderID string, msgID int) error
+	GetOrderGroupMsg(orderID string) (int, error)
+
 	// // Cart
 	AddToCart(userID int64, productID string, quantity int) error
 	GetCart(userID int64) (*models.Cart, error)
@@ -41,9 +47,14 @@ type Storage interface {
 	// // Categories
 	CreateCategory(category *models.Category) error
 	GetAllCategories() (*models.Categories, error)
+	GetCategoriesForAdmin() (*models.Categories, error)
 	GetCategoryByID(category_id string) (*models.Category, error)
 	UpdateCategoryById(category *models.Category) (*models.Category, error)
-	UpdateAbeletyCategoryById(category_id string, abelety bool) error
+	UpdateAbeletyCategoryById(category_id string) error
+	UpdateNameUzCategoryById(category_id string, name_uz string) error
+	UpdateNameRuCategoryById(category_id string, name_ru string) error
+	UpdateNameEnCategoryById(category_id string, name_en string) error
+	UpdateNameTrCategoryById(category_id string, name_tr string) error
 	DeleteCategoryById(category_id string) error
 	// // Products
 	GetAllProducts() (*models.Products, error)
@@ -53,6 +64,19 @@ type Storage interface {
 	GetProductsByCategory(categoryID string) (*models.Products, error)
 	GetProductById(product_id string) (*models.Product, error)
 	GetProductByName(product_name string) (*models.Product, error)
+	GetProductsForAdmin() (*models.Products, error)
+	AddProductToCategory(productID, categoryID string) error
+	GetProductByIdForAdmin(product_id string) (*models.Product, error)
+	GetProductsByCategoryForAdmin(category_id string) (*models.Products, error)
+	UpdateAbeletyProductById(product_id string) error
+	UpdateProductPriceById(product_id string, price int) error
+	UpdateProductDescById(product_id string, description string) error
+	UpdateProductNameUz(product_id string, name_uz string) error
+	UpdateProductNameRu(product_id string, name_ru string) error
+	UpdateProductNameEn(product_id string, name_en string) error
+	UpdateProductNameTr(product_id string, name_tr string) error
+	UpdateProductCategoryById(product_id string, category_id string) error
+	UpdateProductPhotoById(product_id string, photo string) error
 	// // Admin
 	CheckAdmin(telegramID int64) bool
 	CreateAdmin(admin *models.Admin) (*models.Admin, error)
@@ -63,6 +87,7 @@ type Storage interface {
 	CloseDay() error
 	CheckOpened() (bool, error)
 	OpenDay() error
+	ChangeAdminLang(admin_id int64, lang string) (string, error)
 	// // Adds
 	CreateAdds(adds *models.Add) (*models.Add, error)
 	GetAllAdds() (*models.Adds, error)

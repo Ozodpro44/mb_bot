@@ -24,23 +24,60 @@ func (s *Storage) RegisterUser(user *models.User) error {
 }
 
 func (s *Storage) GetAllUsers() (*models.Users, error) {
-	rows, err := s.db.Query("SELECT telegram_id, username, first_name, phone_number, created_at FROM users")
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch users: %v", err)
-	}
-	defer rows.Close()
+	const batchSize = 100
+	offset := 0
 
 	var users models.Users
-	for rows.Next() {
-		var user models.User
-		if err := rows.Scan(&user.TelegramID, &user.Username, &user.Name, &user.Phone_Number, &user.Created_at); err != nil {
-			return nil, fmt.Errorf("failed to scan user: %v", err)
+
+	for {
+		query := "SELECT telegram_id, username, first_name, phone_number, created_at FROM users LIMIT $1 OFFSET $2"
+		rows, err := s.db.Query(query, batchSize, offset)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch users: %v", err)
 		}
-		users.Users = append(users.Users, &user)
+
+		batchCount := 0
+		for rows.Next() {
+			var user models.User
+			if err := rows.Scan(&user.TelegramID, &user.Username, &user.Name, &user.Phone_Number, &user.Created_at); err != nil {
+				rows.Close()
+				return nil, fmt.Errorf("failed to scan user: %v", err)
+			}
+			users.Users = append(users.Users, &user)
+			batchCount++
+		}
+		rows.Close()
+
+		if batchCount < batchSize {
+			break // Exit if fewer rows than batchSize were returned, indicating no more data.
+		}
+
+		offset += batchSize // Move to the next batch.
 	}
-	log.Println("all users got.")
+
+	log.Println("All users retrieved successfully.")
 	return &users, nil
 }
+
+
+// func (s *Storage) GetAllUsers() (*models.Users, error) {
+// 	rows, err := s.db.Query("SELECT telegram_id, username, first_name, phone_number, created_at FROM users")
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to fetch users: %v", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var users models.Users
+// 	for rows.Next() {
+// 		var user models.User
+// 		if err := rows.Scan(&user.TelegramID, &user.Username, &user.Name, &user.Phone_Number, &user.Created_at); err != nil {
+// 			return nil, fmt.Errorf("failed to scan user: %v", err)
+// 		}
+// 		users.Users = append(users.Users, &user)
+// 	}
+// 	log.Println("all users got.")
+// 	return &users, nil
+// }
 
 func (s *Storage) SetLangUser(telegramID int64, lang string) (string, error) {
 	_, err := s.db.Exec(`
@@ -121,10 +158,6 @@ func (s *Storage) GetUserMessageStatus(telegramID int64) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = s.db.Exec("UPDATE user_msg_status SET status = $1  WHERE telegram_id = $2", "not", telegramID)
-	if err != nil {
-		return "", err
-	}
 	return status, nil
 }
 
@@ -150,7 +183,7 @@ func (s *Storage) CreateLocation(location *models.Location) (*models.Location, e
 	if err == sql.ErrNoRows {
 		_, err = s.db.Exec(`
 			INSERT INTO locations (id, user_id, name_uz, name_ru, name_en, name_tr, lat, lon)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 			uuid.New(), user_id, location.Name_uz, location.Name_ru, location.Name_en, location.Name_tr, location.Latitude, location.Longitude)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create location: %v", err)
@@ -161,7 +194,7 @@ func (s *Storage) CreateLocation(location *models.Location) (*models.Location, e
 	} else {
 		_, err = s.db.Exec(`
 			UPDATE locations SET name_uz = $1, name_ru = $2, name_en = $3, name_tr = $4, lat = $5, lon = $6
-			WHERE user_id = $6`, location.Name_uz, location.Name_ru, location.Name_en, location.Name_tr, location.Latitude, location.Longitude, user_id)
+			WHERE user_id = $7`, location.Name_uz, location.Name_ru, location.Name_en, location.Name_tr, location.Latitude, location.Longitude, user_id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update location: %v", err)
 		}

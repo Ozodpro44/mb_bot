@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bot/models"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func FormatPhoneNumber(input string) (string, error) {
@@ -288,3 +291,14 @@ func Haversine(lat1, lon1, lat2, lon2 float64) bool {
 	return R * c <= 0.6
 }
 
+func CompresedUUID(id uuid.UUID) string {
+	return base64.URLEncoding.EncodeToString(id[:])
+}
+
+func DecompresedUUID(compressed string) (uuid.UUID, error) {
+	data, err := base64.URLEncoding.DecodeString(compressed)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return uuid.FromBytes(data)
+}
