@@ -88,7 +88,7 @@ var AdminMessages = map[string]map[string]string{
 		"adds_sent":            "Adds sent✅",
 		"btn_upd_photo":        "🖼️Update Photo",
 		"prod_photo_updated":   "Product photo updated✅",
-		"prod_photo_msg":		"Send Photo 🖼️",
+		"prod_photo_msg":       "Send Photo 🖼️",
 	},
 	"ru": {
 		"add_category":         "Добавить категорию ➕",
@@ -161,7 +161,7 @@ var AdminMessages = map[string]map[string]string{
 		"adds_sent":            "Реклама отправлена✅",
 		"btn_upd_photo":        "🖼️Обновить Фото",
 		"prod_photo_updated":   "Фото продукта успешно обновлено✅",
-		"prod_photo_msg":		"Отправить Фото 🖼️",
+		"prod_photo_msg":       "Отправить Фото 🖼️",
 	},
 	"uz": {
 		"add_category":         "Kategoriya qo'shish ➕",
@@ -234,7 +234,7 @@ var AdminMessages = map[string]map[string]string{
 		"adds_sent":            "Reklama yuborildi✅",
 		"btn_upd_photo":        "🖼️Rasmni yangilash",
 		"prod_photo_updated":   "Mahsulot rasmi muvaffaqiyatli yangilandi✅",
-		"prod_photo_msg":		"Rasm yuborish 🖼️",
+		"prod_photo_msg":       "Rasm yuborish 🖼️",
 	},
 	"tr": {
 		"add_category":         "Kategoriyi Eklemek ➕",
@@ -307,12 +307,13 @@ var AdminMessages = map[string]map[string]string{
 		"adds_sent":            "Reklam gönderildi✅",
 		"btn_upd_photo":        "🖼️Rasmı Güncelle",
 		"prod_photo_updated":   "Ürün fotoğrafı güncellendi✅",
-		"prod_photo_msg":		"Rasmı gönder 🖼️",
+		"prod_photo_msg":       "Rasmı gönder 🖼️",
 	},
 }
 
 func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	userID := c.Sender().ID
+	// fmt.Println(userID)
 	if !h.storage.CheckAdmin(userID) {
 		return c.Send("You are not admin")
 	}
@@ -347,7 +348,10 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	)
 	menu.ResizeKeyboard = true
 
-	c.EditOrSend("Admin panel:", menu)
+	err = c.EditOrSend("Admin panel:", menu)
+	if err != nil {
+		c.Send("Admin panel:", menu)
+	}
 
 	return nil
 }
@@ -808,7 +812,10 @@ func (h *handlers) DeleteCategory(c telebot.Context) error {
 	return c.Send(AdminMessages[lang]["cat_deleted"], menu)
 }
 
+var createCatID int 
+
 func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
+	c.Delete()
 	userID := c.Sender().ID
 
 	if !h.storage.CheckAdmin(userID) {
@@ -831,8 +838,8 @@ func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
 		ReplyMarkup: markup,
 	}
 
-	err = c.Edit(AdminMessages[lang]["category"], options)
-
+	msg, err := c.Bot().Send(c.Recipient(),AdminMessages[lang]["category"], options)
+	createCatID = msg.ID
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -841,6 +848,7 @@ func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
 }
 
 func (h *handlers) CreateCategory(c telebot.Context) error {
+	c.Bot().Delete(&telebot.Message{ID: createCatID,Chat: c.Chat()})
 	c.Delete()
 	text := c.Message().Text
 	userID := c.Sender().ID
@@ -886,14 +894,20 @@ func (h *handlers) CreateCategory(c telebot.Context) error {
 	err = h.storage.CreateCategory(&category)
 
 	if err != nil {
-		return c.Send(err.Error())
+		log.Println(err.Error())
+		msg, err := c.Bot().Send(c.Recipient(),"You have Dublicate name",options)
+		createCatID = msg.ID
+		return err
 	}
 
-	return c.Respond(&telebot.CallbackResponse{
-		Text: "Category created✅"})
+	// return c.Respond(&telebot.CallbackResponse{
+	// 	Text: "Category created✅"})
+	
+	return c.Send("Category created✅", options)
 }
 
 func (h *handlers) GetUsers(c telebot.Context) error {
+	c.Delete()
 	userID := c.Sender().ID
 	if !h.storage.CheckAdmin(userID) {
 		return c.Send("You are not admin")
@@ -953,6 +967,8 @@ func (h *handlers) GetUsers(c telebot.Context) error {
 		return err
 	}
 	// Optionally, send a confirmation message to the bot user
+	err = h.ShowAdminPanel(c)
+	fmt.Println(err)
 	return nil
 }
 
@@ -1871,7 +1887,7 @@ func (h *handlers) UpdateProductPhoto(c telebot.Context) error {
 	// 	ReplyMarkup: markup,
 	// }
 	return c.Respond(&telebot.CallbackResponse{
-		Text:  	AdminMessages[lang]["prod_photo_updated"],
+		Text: AdminMessages[lang]["prod_photo_updated"],
 	})
 }
 
@@ -2166,19 +2182,19 @@ func (h *handlers) AdminPhotostatus(c telebot.Context) error {
 	}
 
 	switch status {
-	case "add_photo":
+	case "add_product":
 		return h.AddProduct(c)
 	case "update_photo":
 		return h.UpdateProductPhoto(c)
 	case "adds":
 		return h.SendAddToUsers(c)
 	default:
-		if h.storage.CheckUserExist(userId) {
-			noloc := &telebot.ReplyMarkup{}
-			btnBack := noloc.Data(Messages["en"]["back"], "back_to_user_menu")
-			noloc.Inline(noloc.Row(btnBack))
-			return c.Send("Unknown status", noloc)
-		}
+		// if h.storage.CheckUserExist(userId) {
+		// 	noloc := &telebot.ReplyMarkup{}
+		// 	btnBack := noloc.Data(Messages["en"]["back"], "back_to_user_menu")
+		// 	noloc.Inline(noloc.Row(btnBack))
+		// 	return c.Send("Unknown status", noloc)
+		// }
 		return c.Send("Unknown status")
 	}
 }

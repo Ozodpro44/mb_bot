@@ -12,7 +12,7 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-const groupID = int64(-4720688028)
+const groupID = int64(-4633666523)
 
 var Messages = map[string]map[string]string{
 	"en": {
@@ -192,7 +192,7 @@ var Messages = map[string]map[string]string{
 		"confirm_order":      "✅Siparişi Onayla",
 		"continue_order":     "🧾Siparişi Devam Ettir",
 		"added_to_cart":      "Ürün sepete eklendi✅",
-		"order_msg":          "📋 *Sipariş numarası*: %d \n🚕 *Teslimat türü*: Teslimat> \n🏠 *Adres*: %s \n📍 *Şube*: Yakkasaroy \n\n %s \n\n💵 *Ürünler*: %v \n🚚 *Teslimat ücreti*: %s \n💰 *Toplam*: %v \nÖdeme türü: %s \nDurum: %s",
+		"order_msg":          "📋 *Sipariş numarası*: %d \n🚕 *Teslimat türü*: Teslimat \n🏠 *Adres*: %s \n📍 *Şube*: Yakkasaroy \n\n %s \n\n💵 *Ürünler*: %v \n🚚 *Teslimat ücreti*: %s \n💰 *Toplam*: %v \nÖdeme türü: %s \nDurum: %s",
 		"delivery":           "Teslimat🚚",
 		"pickup":             "Çekim🚶‍♂️",
 		"re-order":           "Tekrar Sipariş Et🔄",
@@ -248,7 +248,10 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_add", "uz")
 	btnTR := menu.Data("Türk🇹🇷", "language_add", "tr")
 
-	menu.Inline(menu.Row(btnEN, btnRU, btnUZ, btnTR))
+	menu.Inline(
+		menu.Row(btnRU, btnUZ),
+		menu.Row(btnEN, btnTR),
+	)
 	return c.Send(Messages["en"]["language_prompt"], menu)
 
 }
@@ -325,6 +328,12 @@ func (h *handlers) SendAboutUs(c telebot.Context) error {
 func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	userID := c.Sender().ID
 	username := c.Sender().Username
+	var text string
+	if c.Message().Contact != nil {
+		text =c.Message().Contact.PhoneNumber
+	}else{
+		text = c.Message().Text
+	}
 
 	// l := c.Message().Location.
 	lang, err := h.storage.GetLangUser(userID)
@@ -338,7 +347,7 @@ func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 		return c.Send(err.Error())
 	}
 
-	phone, err := helpers.FormatPhoneNumber(c.Message().Contact.PhoneNumber)
+	phone, err := helpers.FormatPhoneNumber(text)
 
 	if err != nil {
 		keyboard := &telebot.ReplyMarkup{
@@ -1075,6 +1084,7 @@ func (h *handlers) ClearCart(c telebot.Context) error {
 }
 
 func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
+	
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
@@ -1086,6 +1096,7 @@ func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
 
 	phoneButton := keyboard.Contact(Messages[lang]["get_phone"])
 	keyboard.Reply(keyboard.Row(phoneButton))
+
 
 	return c.Send(Messages[lang]["phone"], keyboard)
 }
@@ -1104,6 +1115,8 @@ func (h *handlers) UserMsgStatus(c telebot.Context) error {
 	case "firstname":
 		h.storage.SetDataUserMessageStatus(userId, text)
 		return h.RequestPhoneNumber(c)
+	case "phone":
+		h.HandleRegistrationSteps(c)
 	case "note":
 		h.GetNoteFromUser(c)
 	case "location":
@@ -1173,10 +1186,11 @@ func (h *handlers) ChangeLanguage(c telebot.Context) error {
 	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
 	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
 	btnTR := menu.Data("Türk🇹🇷", "language_change", "tr")
-	btnBack := menu.Data(Messages["en"]["back"], "back_to_user_menu")
+	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
 
 	menu.Inline(
-		menu.Row(btnEN, btnRU, btnUZ, btnTR),
+		menu.Row(btnRU, btnUZ),
+		menu.Row(btnEN, btnTR),
 		menu.Row(btnBack),
 	)
 	c.Edit(Messages[lang]["language_prompt"], menu)
@@ -1188,18 +1202,20 @@ func (h *handlers) SetChangeLang(c telebot.Context) error {
 	userID := c.Sender().ID
 	lang := c.Callback().Data
 	h.storage.ChangeLangUser(userID, lang)
-	menu := &telebot.ReplyMarkup{}
-	btnEN := menu.Data("English🇬🇧", "language_change", "en")
-	btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
-	btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
-	btnTR := menu.Data("Türk🇹🇷", "language_change", "tr")
-	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+	// menu := &telebot.ReplyMarkup{}
+	// btnEN := menu.Data("English🇬🇧", "language_change", "en")
+	// btnRU := menu.Data("Русский🇷🇺", "language_change", "ru")
+	// btnUZ := menu.Data("O'zbek🇺🇿", "language_change", "uz")
+	// btnTR := menu.Data("Türk🇹🇷", "language_change", "tr")
+	// btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
 
-	menu.Inline(
-		menu.Row(btnEN, btnRU, btnUZ, btnTR),
-		menu.Row(btnBack),
-	)
-	c.Edit(Messages[lang]["language_prompt"], menu)
+	// menu.Inline(
+	// 	menu.Row(btnRU, btnUZ),
+	// 	menu.Row(btnEN, btnTR),
+	// 	menu.Row(btnBack),
+	// )
+	// c.Edit(Messages[lang]["language_prompt"], menu)
+	h.ShowUserMenu(c)
 	return nil
 }
 
@@ -1303,6 +1319,15 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	}
 	return nil
 }
+
+// func (h *handlers) BackToMainMenuFromOrders(c telebot.Context) error {
+// 	userID := c.Sender().ID
+// 	lang, err := h.storage.GetLangUser(userID)
+// 	if err != nil {
+// 		return c.Send(err.Error())
+// 	}
+// 	c.Delete()
+// }
 
 func (h *handlers) CompleteOrder(c telebot.Context) error {
 	userID := c.Sender().ID
