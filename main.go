@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	sqliteStoragePath = "user=postgres password=postgres dbname=mb_doner_bot sslmode=disable"
+	sqliteStoragePath = "user=postgres password=postgres dbname=railway sslmode=disable"
 )
 
 // 7917631019:AAE_pQRmw1otdm7XNZtsr8XzG19aGVKgz4I
