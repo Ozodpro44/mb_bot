@@ -65,6 +65,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "No need",
 		"cancel_order":       "Cancel 🚫",
 		"canceled":           "Order canceled🚫",
+		"wait_msg":           "Wait a minute...",
 	},
 	"ru": {
 		"welcome":            "Добро пожаловать! Пожалуйста, введите ваше имя:",
@@ -116,6 +117,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Не нужно",
 		"cancel_order":       "Отменить 🚫",
 		"canceled":           "Заказ отменен🚫",
+		"wait_msg":           "Подождите минуту...",
 	},
 	"uz": {
 		"welcome":            "Xush kelibsiz! Iltimos, ismingizni kiriting:",
@@ -167,6 +169,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Kerak emas",
 		"cancel_order":       "Bekor qilish 🚫",
 		"canceled":           "Buyurtma bekor qilindi🚫",
+		"wait_msg":           "Bir daqiqa kuting...",
 	},
 	"tr": {
 		"welcome":            "Hoş geldiniz! Lütfen adınızı girin:",
@@ -218,6 +221,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Gerekmiyor",
 		"cancel_order":       "İptal Et 🚫",
 		"canceled":           "Sipariş iptal edildi🚫",
+		"wait_msg":           "Bir dakika bekle...",
 	},
 }
 
@@ -330,8 +334,8 @@ func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	username := c.Sender().Username
 	var text string
 	if c.Message().Contact != nil {
-		text =c.Message().Contact.PhoneNumber
-	}else{
+		text = c.Message().Contact.PhoneNumber
+	} else {
 		text = c.Message().Text
 	}
 
@@ -1084,7 +1088,7 @@ func (h *handlers) ClearCart(c telebot.Context) error {
 }
 
 func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
-	
+
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
@@ -1096,7 +1100,6 @@ func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
 
 	phoneButton := keyboard.Contact(Messages[lang]["get_phone"])
 	keyboard.Reply(keyboard.Row(phoneButton))
-
 
 	return c.Send(Messages[lang]["phone"], keyboard)
 }
@@ -1333,11 +1336,12 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	userID := c.Sender().ID
 	payment_type := c.Callback().Data
 
-	orderID, err := h.storage.CreateOrder(userID, payment_type)
+	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	lang, err := h.storage.GetLangUser(userID)
+	c.Edit(Messages[lang]["wait_msg"])
+	orderID, err := h.storage.CreateOrder(userID, payment_type)
 	if err != nil {
 		return c.Send(err.Error())
 	}
