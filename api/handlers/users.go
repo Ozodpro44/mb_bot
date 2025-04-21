@@ -747,11 +747,14 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 	// Handle text input (for productID)
 	prod := c.Callback().Data
 	userID := c.Sender().ID
-
 	// Get user language
-	_, err := h.storage.GetLangUser(userID)
+	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
 		return c.Send(err.Error())
+	}
+	err = c.Edit(Messages[lang]["wait_msg"])
+	if err!= nil {
+		c.Send(Messages[lang]["wait_msg"])
 	}
 
 	// Get product details by productID
