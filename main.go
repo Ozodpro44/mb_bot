@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	sqliteStoragePath = "user=postgres password=xdsMjvlWPIUhDPASTujGqsjERxUaxOKh dbname=railway sslmode=disable"
+	sqliteStoragePath = "user=postgres password=xdsMjvlWPIUhDPASTujGqsjERxUaxOKh dbname=railway host=shinkansen.proxy.rlwy.net port=12783 sslmode=require"
 )
 
 // 7917631019:AAE_pQRmw1otdm7XNZtsr8XzG19aGVKgz4I
