@@ -65,7 +65,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "No need",
 		"cancel_order":       "Cancel 🚫",
 		"canceled":           "Order canceled🚫",
-		"wait_msg":           "Wait a minute...",
+		"wait_msg":           "Almost there… just a bit more magic! ✨",
 	},
 	"ru": {
 		"welcome":            "Добро пожаловать! Пожалуйста, введите ваше имя:",
@@ -117,7 +117,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Не нужно",
 		"cancel_order":       "Отменить 🚫",
 		"canceled":           "Заказ отменен🚫",
-		"wait_msg":           "Подождите минуту...",
+		"wait_msg":           "Почти там… ещё чуть-чуть магии! ✨",
 	},
 	"uz": {
 		"welcome":            "Xush kelibsiz! Iltimos, ismingizni kiriting:",
@@ -169,7 +169,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Kerak emas",
 		"cancel_order":       "Bekor qilish 🚫",
 		"canceled":           "Buyurtma bekor qilindi🚫",
-		"wait_msg":           "Bir daqiqa kuting...",
+		"wait_msg":           "Deyarli yetib keldik… yana biroz sehr! ✨",
 	},
 	"tr": {
 		"welcome":            "Hoş geldiniz! Lütfen adınızı girin:",
@@ -221,7 +221,7 @@ var Messages = map[string]map[string]string{
 		"no_need_note":       "Gerekmiyor",
 		"cancel_order":       "İptal Et 🚫",
 		"canceled":           "Sipariş iptal edildi🚫",
-		"wait_msg":           "Bir dakika bekle...",
+		"wait_msg":           "Neredeyse geldik… biraz daha sihir kaldı! ✨",
 	},
 }
 
@@ -950,6 +950,11 @@ func (h *handlers) SendCart(c telebot.Context) error {
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
+	}
+
+	err = c.Edit(Messages[lang]["wait_msg"])
+	if err != nil {
+		c.Send(Messages[lang]["wait_msg"])
 	}
 
 	// Assume 'cart' is fetched from the database or session
