@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	sqliteStoragePath = "user=postgres password=postgres dbname=railway sslmode=disable"
+	sqliteStoragePath = "user=postgres password=xdsMjvlWPIUhDPASTujGqsjERxUaxOKh dbname=railway sslmode=disable"
 )
 
 // 7917631019:AAE_pQRmw1otdm7XNZtsr8XzG19aGVKgz4I
@@ -24,7 +24,7 @@ func main() {
 
 	
 	pref := telebot.Settings{
-		Token: "5999723229:AAFO8-SF6oge8ZIjFHPJ-fFbBQJASj5i7Kk",
+		Token: "5999723229:AAFecfMkz7FEmzdUhcTjJYNRw3KRYu9BZt4",
 		Poller: &telebot.LongPoller{
 			Timeout: 30 * time.Second,
 		},
