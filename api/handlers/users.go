@@ -1063,9 +1063,9 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 	}
 
 	// Increment the quantity of the selected product
-	for i, item := range cart.Items {
+	for _, item := range cart.Items {
 		if item.ProductID == productID {
-			cart.Items[i].Quantity++
+			// cart.Items[i].Quantity++
 			break
 		}
 	}
@@ -1106,7 +1106,7 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 	for i, item := range cart.Items {
 		if item.ProductID == productID {
 			if cart.Items[i].Quantity > 1 {
-				cart.Items[i].Quantity--
+				// cart.Items[i].Quantity--
 			} else {
 				// Remove the item if quantity becomes zero
 				h.storage.RemoveFromCart(userID, productID)
