@@ -233,17 +233,22 @@ var (
 	userLocation = make(map[int64]bool) // Сохраняем выбранный язык пользователя
 )
 
+var lastMsg = make(map[int64]*telebot.Message)
+
+// var lastMsg []*telebot.Message
+// var lastMsges []telebot.Message
+
 func (h *handlers) HandleLanguage(c telebot.Context) error {
 	userID := c.Sender().ID
 
-	if h.storage.CheckAdmin(userID) {
-		return h.ShowAdminPanel(c)
-	}
-
+	lastMsg[c.Sender().ID], _ = c.Bot().Send(c.Recipient(), "⏲️...")
 	exists := h.storage.CheckUserExist(userID)
 
 	if exists {
 		return h.ShowUserMenu(c)
+	}
+	if h.storage.CheckAdmin(userID) {
+		return h.ShowAdminPanel(c)
 	}
 
 	menu := &telebot.ReplyMarkup{}
@@ -256,6 +261,10 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 		menu.Row(btnRU, btnUZ),
 		menu.Row(btnEN, btnTR),
 	)
+	if lastMsg != nil {
+		c.Bot().Delete(lastMsg[c.Chat().ID])
+		lastMsg = nil
+	}
 	return c.Send(Messages["en"]["language_prompt"], menu)
 
 }
@@ -278,6 +287,16 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if lastMsg[c.Chat().ID] != nil {
+		lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	}
+
+	// var msg = &telebot.Message{}
+	// if err != nil {
+	// 	// msg, _ = c.Bot().Send(c.Recipient(),"⏲️...")
+	// }
+
 	userLocation[c.Sender().ID] = false
 	menu := &telebot.ReplyMarkup{}
 
@@ -303,17 +322,28 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 		ReplyMarkup: menu,
 	}
 
-	order, err := h.storage.GetOrderByUserID(c.Sender().ID)
-	if err != nil {
-		return c.Send(err.Error())
-	}
-	if len(*order) > 0 {
-		for _, ord := range *order {
-			h.storage.SetOrderMsg(ord.OrderID, 0)
-		}
+	// order, err := h.storage.GetOrderByUserID(c.Sender().ID)
+	// if err != nil {
+	// 	return c.Send(err.Error())
+	// }
+	// if len(*order) > 0 {
+	// 	for _, ord := range *order {
+	// 		h.storage.SetOrderMsg(ord.OrderID, 0)
+	// 	}
+	// }
+	// if msg != nil {
+	// 	c.Bot().Delete(msg)
+	// 	msg = nil
+	// }
+	if lastMsg[c.Chat().ID] != nil {
+		c.Bot().Delete(lastMsg[c.Chat().ID])
 	}
 
-	return c.EditOrSend(message, options)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, options)
+	if err != nil {
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
+	}
+	return err
 }
 
 func (h *handlers) SendAboutUs(c telebot.Context) error {
@@ -322,11 +352,21 @@ func (h *handlers) SendAboutUs(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
+	if lastMsg[c.Chat().ID] != nil {
+		lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	}else {
+		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	}
+	// // var msg = &telebot.Message{}
+	// if err != nil {
+	// 	// msg, _ = c.Bot().Send(c.Recipient(),"⏲️...")
+	// }
 	markup := &telebot.ReplyMarkup{}
 	btnBack := markup.Data(Messages[lang]["back"], "back_to_user_menu")
 	markup.Inline(markup.Row(btnBack))
 
-	return c.Edit("MB DONER, Yakkasaroy tumani, 49/1", markup)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], "MB DONER, Yakkasaroy tumani, 49/1", markup)
+	return err
 }
 
 func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
@@ -504,8 +544,18 @@ func (h *handlers) HandleFalseLocation(c telebot.Context) error {
 func (h *handlers) ShowMenu(c telebot.Context) error {
 	telegramID := c.Sender().ID
 
-	h.storage.GetLangUser(telegramID)
+	// h.storage.GetLangUser(telegramID)
 
+	lang, err := h.storage.GetLangUser(telegramID)
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// var msg = &telebot.Message{}
+	if err != nil {
+		// msg, _ = c.Bot().Send(c.Recipient(),"⏲️...")
+	}
 	// Fetch all categories
 	cat, err := h.storage.GetAllCategories()
 	if err != nil {
@@ -513,10 +563,6 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 	}
 
 	// Fetch user's language
-	lang, err := h.storage.GetLangUser(telegramID)
-	if err != nil {
-		return c.Send(fmt.Sprintf("Error: %s", err.Error()))
-	}
 
 	// Generate message and buttons
 	message := ""
@@ -616,8 +662,11 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 	}
 
 	// Send the message with buttons
-	c.EditOrSend(message, options)
-	return nil
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, options)
+	if err != nil {
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
+	}
+	return err
 }
 
 func (h *handlers) ShowProducts(c telebot.Context) error {
@@ -625,13 +674,18 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 	category := c.Callback().Data
 	userID := c.Sender().ID
 
-	cat, err := h.storage.GetCategoryByID(category)
+	lang, err := h.storage.GetLangUser(userID)
 
 	if err != nil {
 		return c.Send(err.Error())
 	}
 
-	lang, err := h.storage.GetLangUser(userID)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	if err != nil {
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	}
+
+	cat, err := h.storage.GetCategoryByID(category)
 
 	if err != nil {
 		return c.Send(err.Error())
@@ -736,11 +790,16 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 	}
 	if c.Callback().Unique == "back_to_products_menu" {
 		c.Delete()
-		return c.Send(message, option)
-	}
-	c.EditOrSend(message, option)
 
-	return nil
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(),message, option)
+		return err
+	}
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, option)
+	if err != nil {
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, option)
+	}
+	return err
+
 }
 
 func (h *handlers) ShowProductByID(c telebot.Context) error {
@@ -752,9 +811,9 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	err = c.Edit(Messages[lang]["wait_msg"])
-	if err!= nil {
-		c.Send(Messages[lang]["wait_msg"])
+	lastMsg[c.Chat().ID],err = c.Bot().Edit(lastMsg[c.Chat().ID],Messages[lang]["wait_msg"])
+	if err != nil {
+		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(),Messages[lang]["wait_msg"])
 	}
 
 	// Get product details by productID
@@ -833,10 +892,11 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 		return h.HandleInlineButtons(c, product)
 	}
 
-	err = c.Edit(photo, options)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],photo, options)
 
 	if err != nil {
-		return c.Send(err.Error())
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), photo, options)
+		return err
 	}
 
 	return h.HandleInlineButtons(c, product)
@@ -947,15 +1007,13 @@ func createCartButtons(cart *models.Cart, lang string) *telebot.ReplyMarkup {
 }
 
 func (h *handlers) SendCart(c telebot.Context) error {
+	c.Delete()
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
 	}
 
-	err = c.Edit(Messages[lang]["wait_msg"])
-	if err != nil {
-		c.Send(Messages[lang]["wait_msg"])
-	}
+	msg, err := c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
 
 	// Assume 'cart' is fetched from the database or session
 	cart, err := h.storage.GetCart(c.Sender().ID)
@@ -967,7 +1025,6 @@ func (h *handlers) SendCart(c telebot.Context) error {
 		c.Delete()
 		return c.Send(Messages[lang]["empty_cart"], btn)
 	}
-	c.Delete()
 
 	message := formatCart(cart, lang)
 	buttons := createCartButtons(cart, lang)
@@ -976,6 +1033,8 @@ func (h *handlers) SendCart(c telebot.Context) error {
 		ParseMode:   telebot.ModeMarkdownV2,
 		ReplyMarkup: buttons,
 	}
+
+	c.Bot().Delete(msg)
 
 	err = c.Send(message, op)
 	if err != nil {
@@ -1293,7 +1352,7 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 			ReplyMarkup: menu,
 		}
 		message = "❌❌❌"
-		c.Send(message, options)
+		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(),message, options)
 	} else {
 		message = "Your orders:\n"
 		for _, order := range *orders {
@@ -1316,11 +1375,11 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 				ReplyMarkup: menu,
 			}
 
-			msg, err := c.Bot().Send(&telebot.User{ID: userID}, message, options)
+			lastMsg[c.Chat().ID], err = c.Bot().Send(&telebot.User{ID: userID}, message, options)
 			if err != nil {
 				fmt.Println(err)
 			}
-			err = h.storage.SetOrderMsg(order.OrderID, msg.ID)
+			err = h.storage.SetOrderMsg(order.OrderID, lastMsg[c.Chat().ID].ID)
 
 			if err != nil {
 				fmt.Println(err)

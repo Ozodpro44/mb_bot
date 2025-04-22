@@ -24,7 +24,7 @@ func main() {
 
 	
 	pref := telebot.Settings{
-		Token: "5999723229:AAFecfMkz7FEmzdUhcTjJYNRw3KRYu9BZt4",
+		Token: "6464858018:AAGl8UsY4x2UnjbnZXMMR6CYYwsdCety_yo",
 		Poller: &telebot.LongPoller{
 			Timeout: 30 * time.Second,
 		},
