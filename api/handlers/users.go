@@ -937,7 +937,7 @@ func (h *handlers) HandleInlineButtons(c telebot.Context, product *models.Produc
 			return c.Send(err.Error())
 		}
 
-		return c.Respond(&telebot.CallbackResponse{Text: Messages[lang]["added_to_cart"]})
+		return c.Respond(&telebot.CallbackResponse{Text: Messages[lang]["added_to_cart"],ShowAlert: true})
 	})
 	return nil
 }
