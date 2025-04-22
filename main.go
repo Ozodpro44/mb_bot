@@ -22,7 +22,7 @@ const (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file", err)
 	}
 
 	token := os.Getenv("BOT_TOKEN")
