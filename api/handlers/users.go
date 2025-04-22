@@ -1050,6 +1050,11 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 	c.Respond()
 	productID := c.Callback().Data // Get product ID from callback data
 	userID := c.Sender().ID
+	err := h.storage.IncrementCartProductByID(userID, productID)
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
 
 	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
@@ -1064,19 +1069,19 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 	fmt.Println(cart)
 
 	// Increment the quantity of the selected product
-	for i, item := range cart.Items {
-		if item.ProductID == productID {
-			cart.Items[i].Quantity++
-			break
-		}
-	}
-	fmt.Println("new", cart)
+	// for i, item := range cart.Items {
+	// 	if item.ProductID == productID {
+	// 		cart.Items[i].Quantity++
+	// 		break
+	// 	}
+	// }
+	// fmt.Println("new", cart)
 
 	// Update the cart in storage
-	err = h.storage.UpdateCart(userID, cart)
-	if err != nil {
-		return c.Send("Error updating cart")
-	}
+	// err = h.storage.UpdateCart(userID, cart)
+	// if err != nil {
+	// 	return c.Send("Error updating cart")
+	// }
 
 	// Resend the updated cart
 	message := formatCart(cart, lang)
@@ -1095,6 +1100,12 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 	c.Respond()
 	productID := c.Callback().Data
 	userID := c.Sender().ID
+	err := h.storage.DecrementCartProductByID(userID, productID)
+
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
 	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
 		return c.Send(err.Error())
@@ -1106,16 +1117,10 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 	}
 
 	// Decrement the quantity of the selected product
-	for i, item := range cart.Items {
-		if item.ProductID == productID {
-			if cart.Items[i].Quantity > 1 {
-				cart.Items[i].Quantity--
-			} else {
-				// Remove the item if quantity becomes zero
-				h.storage.RemoveFromCart(userID, productID)
-				cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
-			}
-			break
+	for i, _ := range cart.Items {
+		if cart.Items[i].Quantity < 1 {
+			h.storage.RemoveFromCart(userID, productID)
+			cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
 		}
 	}
 
@@ -1126,11 +1131,11 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 		btn.Inline(btn.Row(btnBack))
 		return c.Edit(Messages[lang]["empty_cart"], btn)
 	}
-	err = h.storage.UpdateCart(userID, cart)
-	if err != nil {
-		fmt.Println(err)
-		return c.Send("Error updating cart")
-	}
+	// err = h.storage.UpdateCart(userID, cart)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return c.Send("Error updating cart")
+	// }
 
 	message := formatCart(cart, lang)
 	buttons := createCartButtons(cart, lang)
