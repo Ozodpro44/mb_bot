@@ -1061,14 +1061,16 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 	if err != nil {
 		return c.Send("Error fetching cart")
 	}
+	fmt.Println(cart)
 
 	// Increment the quantity of the selected product
-	for _, item := range cart.Items {
+	for i, item := range cart.Items {
 		if item.ProductID == productID {
-			// cart.Items[i].Quantity++
+			cart.Items[i].Quantity++
 			break
 		}
 	}
+	fmt.Println("new", cart)
 
 	// Update the cart in storage
 	err = h.storage.UpdateCart(userID, cart)
@@ -1084,6 +1086,7 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 		ParseMode:   telebot.ModeMarkdownV2,
 		ReplyMarkup: buttons,
 	}
+	fmt.Println(message)
 
 	return c.Edit(message, option)
 }
@@ -1106,7 +1109,7 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 	for i, item := range cart.Items {
 		if item.ProductID == productID {
 			if cart.Items[i].Quantity > 1 {
-				// cart.Items[i].Quantity--
+				cart.Items[i].Quantity--
 			} else {
 				// Remove the item if quantity becomes zero
 				h.storage.RemoveFromCart(userID, productID)
