@@ -1,30 +1,48 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"bot/api"
 	postgres "bot/storage/sql"
 
+	"github.com/joho/godotenv"
 	"gopkg.in/telebot.v3"
 )
 
 const (
-	sqliteStoragePath = "user=postgres password=xdsMjvlWPIUhDPASTujGqsjERxUaxOKh dbname=railway host=shinkansen.proxy.rlwy.net port=12783 sslmode=require"
+	sqliteStoragePath = "user=%s password=%s dbname=%s host=%s port=%s sslmode=%s"
 )
 
 // 7917631019:AAE_pQRmw1otdm7XNZtsr8XzG19aGVKgz4I
 
 func main() {
-	s, err := postgres.New(sqliteStoragePath)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	token := os.Getenv("BOT_TOKEN")
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+	sslmode := os.Getenv("DB_SSLMODE")
+
+	storagePath := fmt.Sprintf(sqliteStoragePath, user, password, dbname, host, port, sslmode)
+
+	s, err := postgres.New(storagePath)
 	if err != nil {
 		log.Fatal("can't connect to storage: ", err)
 	}
 
 	
 	pref := telebot.Settings{
-		Token: "6464858018:AAGl8UsY4x2UnjbnZXMMR6CYYwsdCety_yo",
+		Token: token,
 		Poller: &telebot.LongPoller{
 			Timeout: 30 * time.Second,
 		},

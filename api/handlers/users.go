@@ -270,6 +270,7 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 }
 
 func (h *handlers) GetUserName(c telebot.Context) error {
+	c.Delete()
 	lang := c.Callback().Data
 
 	h.storage.SetLangUser(c.Sender().ID, lang)
@@ -828,6 +829,15 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 
 // Function to display product menu with quantity options
 func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, quantity int) error {
+	photoPath := ""
+	go func() error {
+		photoPath = product.Photo // Assuming product.PhotoID contains the filename without extension
+		if _, err := os.Stat(photoPath); os.IsNotExist(err) {
+			photoPath = "./photos/no_photo.jpg"
+			// return c.Send("Photo not found.")
+		}
+		return nil
+	}()
 	totalPrice := int(product.Price) * quantity
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
@@ -871,15 +881,7 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 	}
 	log.Println(message)
 
-	go func() error {
-		photoPath := product.Photo // Assuming product.PhotoID contains the filename without extension
-		if _, err := os.Stat(photoPath); os.IsNotExist(err) {
-			return c.Send("Photo not found.")
-		}
-		return nil
-	}()
-
-	photo := &telebot.Photo{File: telebot.FromDisk(product.Photo), Caption: message}
+	photo := &telebot.Photo{File: telebot.FromDisk(photoPath), Caption: message}
 
 	options := &telebot.SendOptions{
 		ReplyMarkup: markup,
