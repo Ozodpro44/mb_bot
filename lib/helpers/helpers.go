@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bot/models"
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -9,12 +10,15 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+
+	// "net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 func FormatPhoneNumber(input string) (string, error) {
@@ -36,9 +40,9 @@ func FormatPhoneNumber(input string) (string, error) {
 			// Turkey format: +90 xxx xxx xxxx
 			return fmt.Sprintf("+%s %s %s %s",
 				digits[:2],        // +90
-				digits[2:5],        // xxx
-				digits[5:8],        // xxx
-				digits[8:12]), nil  // xxxx
+				digits[2:5],       // xxx
+				digits[5:8],       // xxx
+				digits[8:12]), nil // xxxx
 		} else if len(digits) > 10 {
 			// General international format: +CC xxxx...xxxx
 			return fmt.Sprintf("+%s %s",
@@ -288,7 +292,7 @@ func Haversine(lat1, lon1, lat2, lon2 float64) bool {
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLon/2)*math.Sin(dLon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	return R * c <= 0.6
+	return R*c <= 2.5
 }
 
 func CompresedUUID(id uuid.UUID) string {
@@ -302,3 +306,93 @@ func DecompresedUUID(compressed string) (uuid.UUID, error) {
 	}
 	return uuid.FromBytes(data)
 }
+
+// func SendSMS(phone, message string) error {
+// 	endpoint := "https://sms.ru/sms/send"
+
+// 	params := url.Values{}
+// 	params.Set("api_id", "DD459B2E-B7A2-64D9-8A98-9788AAED7548")
+// 	params.Set("to", phone) // формат: +998901234567
+// 	params.Set("msg", message)
+// 	params.Set("json", "1")
+
+// 	resp, err := http.PostForm(endpoint, params)
+// 	if err != nil {
+// 		return fmt.Errorf("ошибка отправки запроса: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	body, _ := ioutil.ReadAll(resp.Body)
+// 	fmt.Println("Ответ от SMS.RU:", string(body))
+
+// 	return nil
+// }
+
+
+type AuthResponse struct {
+	Message string `json:"message"`
+	Data    struct {
+		Token string `json:"token"`
+	} `json:"data"`
+}
+
+func getEskizToken(email, password string) (string, error) {
+	body := map[string]string{
+		"email":    email,
+		"password": password,
+	}
+	jsonData, _ := json.Marshal(body)
+
+	resp, err := http.Post("https://notify.eskiz.uz/api/auth/login", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, _ := ioutil.ReadAll(resp.Body)
+	var res AuthResponse
+	json.Unmarshal(data, &res)
+
+	if res.Data.Token == "" {
+		return "", fmt.Errorf("ошибка авторизации: %s", res.Message)
+	}
+
+	return res.Data.Token, nil
+}
+
+func SendEskizSMS(phone, message string) error {
+	godotenv.Load()
+	email := os.Getenv("ESKIZ_EMAIL")
+	password := os.Getenv("ESKIZ_PASSWORD")
+
+	fmt.Println(email,password)
+
+	token, err := getEskizToken(email, password)
+	if err != nil {
+		return err
+	}
+
+	payload := map[string]string{
+		"mobile_phone":  phone,           // только цифры, без +998
+		"message":       message,
+		"from":          "4546",          // sender ID от Eskiz
+		"callback_url":  "",
+	}
+	jsonData, _ := json.Marshal(payload)
+
+	req, _ := http.NewRequest("POST", "https://notify.eskiz.uz/api/message/sms/send", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("Ответ от Eskiz:", string(body))
+	return nil
+}
+

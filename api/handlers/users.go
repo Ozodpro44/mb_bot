@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/telebot.v3"
 )
@@ -31,6 +32,7 @@ var Messages = map[string]map[string]string{
 		"cart":               "🛒Cart",
 		"add_to_cart":        "📥Add to cart",
 		"clear_cart":         "♻️ Clear",
+		"cart_cleared":       "Cart cleared🧹",
 		"cart_messsage":      "*%s*\n\nPrice: %d UZS\nQuantity: %d\nTotal: %d UZS",
 		"empty_cart":         "Your cart is empty🛒🚫",
 		"user_menu":          "*Main menu:*\n\nChoose one of the following options",
@@ -59,7 +61,7 @@ var Messages = map[string]map[string]string{
 		"thanks":             "Thank you!",
 		"no_need":            "No need location❗",
 		"succsess":           "Your order has been successfully placed\n",
-		"our_card":           "\nMake payment to this card 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"our_card":           "\nMake payment to this card 👇\n\n9860230107788070 \nZ******** O******",
 		"closed_msg":         "We are closed for today.😔",
 		"note":               "Enter additional data ✍️\n(For example: Apartment number, Order comment...)",
 		"no_need_note":       "No need",
@@ -83,6 +85,7 @@ var Messages = map[string]map[string]string{
 		"cart":               "🛒Корзина",
 		"add_to_cart":        "📥Добавить в корзину",
 		"clear_cart":         "♻️ Очистить",
+		"cart_cleared":       "Корзина очищена🧹",
 		"cart_messsage":      "*%s*\n\nЦена: %d UZS\nКоличество: %d\nИтого: %d UZS",
 		"empty_cart":         "Корзина пуста🛒🚫",
 		"user_menu":          "*Главное меню:*\n\nВыберите одну из следующих опций",
@@ -111,7 +114,7 @@ var Messages = map[string]map[string]string{
 		"thanks":             "Спасибо!",
 		"no_need":            "Не нужно местоположение❗",
 		"succsess":           "Ваш заказ успешно оформлен\n",
-		"our_card":           "\nПроизведите оплату на эту карту 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"our_card":           "\nПроизведите оплату на эту карту 👇\n\n9860230107788070 \nZ******** O******",
 		"closed_msg":         "Сегодня заведение закрыто😔",
 		"note":               "Введите дополнительные данные✍️\n(Например: Номер квартиры, Комментарий к заказу ...)",
 		"no_need_note":       "Не нужно",
@@ -135,6 +138,7 @@ var Messages = map[string]map[string]string{
 		"cart":               "🛒Savatcha",
 		"add_to_cart":        "📥Savatga qo'shish",
 		"clear_cart":         "♻️ Tozalash",
+		"cart_cleared":       "Savat tozalandi🧹",
 		"cart_messsage":      "*%s*\n\nNarxi: %d UZS\nMiqdor: %d\nJami: %d UZS",
 		"empty_cart":         "Savatingiz bo'sh🛒🚫",
 		"user_menu":          "*Asosiy menyu:*\n\n Quyidagilardan birini tanlang:",
@@ -163,7 +167,7 @@ var Messages = map[string]map[string]string{
 		"thanks":             "Rahmat!",
 		"no_need":            "Joylashuvingiz hozir kerak emas❗",
 		"succsess":           "Buyurtmangiz muvaffaqiyatli qabul qilindi\n",
-		"our_card":           "\nTo'lovni shu kartaga qiling 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"our_card":           "\nTo'lovni shu kartaga qiling 👇\n\n9860230107788070 \nZ******** O******",
 		"closed_msg":         "Buguncha yopildik😔",
 		"note":               "Qoshimcha ma'lumot kriting✍️\n(Masalan: Kvartira raqami, Qoshimcha telefon nomer ...):",
 		"no_need_note":       "Kerak emas",
@@ -187,6 +191,7 @@ var Messages = map[string]map[string]string{
 		"cart":               "🛒Sepet",
 		"add_to_cart":        "📥Sepete ekle",
 		"clear_cart":         "♻️ Temizle",
+		"cart_cleared":       "Sepet temizlendi🧹",
 		"cart_messsage":      "*%s*\n\nFiyat: %d TL\nMiktar: %d\nToplam: %d TL",
 		"empty_cart":         "Sepetiniz boş🛒🚫",
 		"user_menu":          "*Ana Menü:*\n\nAşağıdaki seçeneklerden birini seçin",
@@ -215,7 +220,7 @@ var Messages = map[string]map[string]string{
 		"thanks":             "Teşekkürler!",
 		"no_need":            "Konum gerekmiyor❗",
 		"succsess":           "Siparişiniz başarıyla oluşturuldu\n",
-		"our_card":           "\nBu karta ödeme yapın 👇\n\n5614 6806 1838 4578 \nMustafa Bugra",
+		"our_card":           "\nBu karta ödeme yapın 👇\n\n9860230107788070 \nZ******** O******",
 		"closed_msg":         "Bugün için kapalıyız😔",
 		"note":               "Ek bilgilerinizi girin ✍️(Örneğin: Daire numarası, Sipariş notu...)",
 		"no_need_note":       "Gerekmiyor",
@@ -241,8 +246,12 @@ var lastMsg = make(map[int64]*telebot.Message)
 func (h *handlers) HandleLanguage(c telebot.Context) error {
 	userID := c.Sender().ID
 
-	lastMsg[c.Sender().ID], _ = c.Bot().Send(c.Recipient(), "⏲️...")
 	exists := h.storage.CheckUserExist(userID)
+
+	// err := helpers.SendEskizSMS("+998770707041", "Bu Eskiz dan test 880")
+	// if err != nil {
+	// 	return err
+	// }
 
 	if exists {
 		return h.ShowUserMenu(c)
@@ -261,10 +270,6 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 		menu.Row(btnRU, btnUZ),
 		menu.Row(btnEN, btnTR),
 	)
-	if lastMsg != nil {
-		c.Bot().Delete(lastMsg[c.Chat().ID])
-		lastMsg = nil
-	}
 	return c.Send(Messages["en"]["language_prompt"], menu)
 
 }
@@ -290,7 +295,8 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	}
 
 	if lastMsg[c.Chat().ID] != nil {
-		lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+		c.Bot().Delete(lastMsg[c.Chat().ID])
 	}
 
 	// var msg = &telebot.Message{}
@@ -336,14 +342,13 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	// 	c.Bot().Delete(msg)
 	// 	msg = nil
 	// }
-	if lastMsg[c.Chat().ID] != nil {
-		c.Bot().Delete(lastMsg[c.Chat().ID])
-	}
+	// if lastMsg[c.Chat().ID] != nil {
+	// 	c.Bot().Delete(lastMsg[c.Chat().ID])
+	// }
 
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, options)
-	if err != nil {
-		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
-	}
+	// lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, options)
+
+	lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
 	return err
 }
 
@@ -353,11 +358,11 @@ func (h *handlers) SendAboutUs(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	if lastMsg[c.Chat().ID] != nil {
-		lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
-	}else {
-		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
-	}
+	// if lastMsg[c.Chat().ID] != nil {
+	// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// } else {
+	// 	lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	// }
 	// // var msg = &telebot.Message{}
 	// if err != nil {
 	// 	// msg, _ = c.Bot().Send(c.Recipient(),"⏲️...")
@@ -552,7 +557,9 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 		return c.Send(fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// if lastMsg[c.Chat().ID] != nil {
+	// 	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// }
 	// var msg = &telebot.Message{}
 	if err != nil {
 		// msg, _ = c.Bot().Send(c.Recipient(),"⏲️...")
@@ -663,7 +670,9 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 	}
 
 	// Send the message with buttons
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, options)
+	if lastMsg[c.Chat().ID] != nil {
+		lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, options)
+	}
 	if err != nil {
 		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
 	}
@@ -681,10 +690,10 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 		return c.Send(err.Error())
 	}
 
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
-	if err != nil {
-		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
-	}
+	// lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// if err != nil {
+	// 	lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	// }
 
 	cat, err := h.storage.GetCategoryByID(category)
 
@@ -792,36 +801,36 @@ func (h *handlers) ShowProducts(c telebot.Context) error {
 	if c.Callback().Unique == "back_to_products_menu" {
 		c.Delete()
 
-		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(),message, option)
+		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, option)
 		return err
 	}
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],message, option)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, option)
 	if err != nil {
 		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, option)
 	}
 	return err
-
 }
 
 func (h *handlers) ShowProductByID(c telebot.Context) error {
 	// Handle text input (for productID)
 	prod := c.Callback().Data
-	userID := c.Sender().ID
+	// userID := c.Sender().ID
 	// Get user language
-	lang, err := h.storage.GetLangUser(userID)
-	if err != nil {
-		return c.Send(err.Error())
-	}
-	lastMsg[c.Chat().ID],err = c.Bot().Edit(lastMsg[c.Chat().ID],Messages[lang]["wait_msg"])
-	if err != nil {
-		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(),Messages[lang]["wait_msg"])
-	}
+	// lang, err := h.storage.GetLangUser(userID)
+	// if err != nil {
+	// 	return c.Send(err.Error())
+	// }
+	// lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+	// if err != nil {
+	// 	lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	// }
 
 	// Get product details by productID
 	product, err := h.storage.GetProductById(prod)
 	if err != nil {
 		return c.Send(err.Error())
 	}
+	c.Delete()
 
 	// Initially show product details with a quantity of 1
 	return h.sendProductMenu(c, product, 1)
@@ -829,28 +838,23 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 
 // Function to display product menu with quantity options
 func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, quantity int) error {
-	photoPath := ""
-	go func() error {
-		photoPath = product.Photo // Assuming product.PhotoID contains the filename without extension
-		if _, err := os.Stat(photoPath); os.IsNotExist(err) {
-			photoPath = "./photos/no_photo.jpg"
-			// return c.Send("Photo not found.")
-		}
-		return nil
-	}()
+	photoPath := product.Photo
+	if _, err := os.Stat(photoPath); os.IsNotExist(err) {
+		photoPath = "./photos/no_photo.jpg"
+	}
+
 	totalPrice := int(product.Price) * quantity
 	lang, err := h.storage.GetLangUser(c.Sender().ID)
 	if err != nil {
 		return c.Send(err.Error())
 	}
 
-	// Create markup for inline buttons
+	// Inline кнопки
 	markup := &telebot.ReplyMarkup{}
 	btnDecrement := markup.Data("➖", "decrement", strconv.Itoa(quantity))
 	btnIncrement := markup.Data("➕", "increment", strconv.Itoa(quantity))
 	btnAddToCart := markup.Data(Messages[lang]["add_to_cart"], "add_to_cart", strconv.Itoa(quantity), product.ID)
 	btnQuantity := markup.Data(strconv.Itoa(quantity), "ignore", strconv.Itoa(quantity))
-	// fmt.Println(len(product.Category_id))
 	btnBack := markup.Data(Messages[lang]["back"], "back_to_products_menu", product.Category_id)
 	btnCart := markup.Data(Messages[lang]["cart"], "show_cart")
 
@@ -860,46 +864,59 @@ func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, q
 		markup.Row(btnBack, btnCart),
 	)
 
-	// Format message
+	// Текст описания
 	var message string
 	switch lang {
 	case "uz":
-		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
-			helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"], helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
 	case "ru":
-		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
-			helpers.EscapeMarkdownV2(product.Name_ru), int(product.Price), quantity, totalPrice)
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"], helpers.EscapeMarkdownV2(product.Name_ru), int(product.Price), quantity, totalPrice)
 	case "en":
-		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
-			helpers.EscapeMarkdownV2(product.Name_en), int(product.Price), quantity, totalPrice)
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"], helpers.EscapeMarkdownV2(product.Name_en), int(product.Price), quantity, totalPrice)
 	case "tr":
-		message = fmt.Sprintf(Messages[lang]["cart_messsage"],
-			helpers.EscapeMarkdownV2(product.Name_tr), int(product.Price), quantity, totalPrice)
+		message = fmt.Sprintf(Messages[lang]["cart_messsage"], helpers.EscapeMarkdownV2(product.Name_tr), int(product.Price), quantity, totalPrice)
 	default:
-		message = fmt.Sprintf(Messages["uz"]["cart_messsage"],
-			helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
+		message = fmt.Sprintf(Messages["uz"]["cart_messsage"], helpers.EscapeMarkdownV2(product.Name_uz), int(product.Price), quantity, totalPrice)
 	}
-	log.Println(message)
-
-	photo := &telebot.Photo{File: telebot.FromDisk(photoPath), Caption: message}
 
 	options := &telebot.SendOptions{
 		ReplyMarkup: markup,
 		ParseMode:   telebot.ModeMarkdownV2,
 	}
 
-	// Send or edit the message with the markup
-	if c.Callback().Unique == "decrement" || c.Callback().Unique == "increment" {
-		c.EditCaption(message, options)
+	// Если кнопка +/- — редактируем только caption
+	if c.Callback() != nil && (c.Callback().Unique == "decrement" || c.Callback().Unique == "increment") {
+		if lastMsg[c.Chat().ID] != nil {
+			_, err := c.Bot().EditCaption(lastMsg[c.Chat().ID], message, options)
+			if err != nil {
+				fmt.Println(err)
+				return c.Send("❌ Не удалось обновить товар.")
+			}
+		}
 		return h.HandleInlineButtons(c, product)
 	}
 
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID],photo, options)
-
+	// 1. Сначала текст без фото
+	msg, err := c.Bot().Send(c.Recipient(), message, options)
 	if err != nil {
-		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), photo, options)
 		return err
 	}
+	lastMsg[c.Chat().ID] = msg // Сохраняем сообщение
+
+	// 2. Через 0.5 сек редактируем и добавляем фото
+	go func(msg *telebot.Message) {
+		time.Sleep(500 * time.Millisecond)
+		photo := &telebot.Photo{
+			File:    telebot.FromDisk(photoPath),
+			Caption: message,
+		}
+		_, err := c.Bot().Edit(msg, photo, options)
+		if err != nil {
+			log.Println("Ошибка при замене на фото:", err)
+		} else {
+			lastMsg[c.Chat().ID] = msg // обновляем
+		}
+	}(msg)
 
 	return h.HandleInlineButtons(c, product)
 }
@@ -937,7 +954,7 @@ func (h *handlers) HandleInlineButtons(c telebot.Context, product *models.Produc
 			return c.Send(err.Error())
 		}
 
-		return c.Respond(&telebot.CallbackResponse{Text: Messages[lang]["added_to_cart"],ShowAlert: true})
+		return c.Respond(&telebot.CallbackResponse{Text: Messages[lang]["added_to_cart"], ShowAlert: true})
 	})
 	return nil
 }
@@ -1015,7 +1032,10 @@ func (h *handlers) SendCart(c telebot.Context) error {
 		return c.Send(err.Error())
 	}
 
-	msg, err := c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	// lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), Messages[lang]["wait_msg"])
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// }
 
 	// Assume 'cart' is fetched from the database or session
 	cart, err := h.storage.GetCart(c.Sender().ID)
@@ -1036,9 +1056,11 @@ func (h *handlers) SendCart(c telebot.Context) error {
 		ReplyMarkup: buttons,
 	}
 
-	c.Bot().Delete(msg)
+	if lastMsg[c.Chat().ID] != nil {
+		c.Bot().Delete(lastMsg[c.Chat().ID])
+	}
 
-	err = c.Send(message, op)
+	lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, op)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -1093,7 +1115,11 @@ func (h *handlers) HandleIncrement(c telebot.Context) error {
 	}
 	fmt.Println(message)
 
-	return c.Edit(message, option)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, option)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	return err
 }
 
 func (h *handlers) HandleDecrement(c telebot.Context) error {
@@ -1145,10 +1171,9 @@ func (h *handlers) HandleDecrement(c telebot.Context) error {
 		ReplyMarkup: buttons,
 	}
 
-	err = c.Edit(message, option)
+	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, option)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		log.Println(err.Error())
 	}
 	return nil
 }
@@ -1159,7 +1184,7 @@ func (h *handlers) ClearCart(c telebot.Context) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
-	c.Respond(&telebot.CallbackResponse{Text: "Cart cleared❗"})
+	c.Respond(&telebot.CallbackResponse{Text: "Cart cleared❗", ShowAlert: true})
 	return h.ShowMenu(c)
 
 }
@@ -1178,7 +1203,11 @@ func (h *handlers) RequestPhoneNumber(c telebot.Context) error {
 	phoneButton := keyboard.Contact(Messages[lang]["get_phone"])
 	keyboard.Reply(keyboard.Row(phoneButton))
 
-	return c.Send(Messages[lang]["phone"], keyboard)
+	lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), Messages[lang]["phone"], keyboard)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	return nil
 }
 
 func (h *handlers) UserMsgStatus(c telebot.Context) error {
@@ -1362,7 +1391,7 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 			ReplyMarkup: menu,
 		}
 		message = "❌❌❌"
-		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(),message, options)
+		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), message, options)
 	} else {
 		message = "Your orders:\n"
 		for _, order := range *orders {

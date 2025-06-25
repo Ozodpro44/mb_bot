@@ -114,15 +114,14 @@ func (s *Storage) ChangeLangUser(telegramID int64, lang string) (string, error) 
 }
 
 func (s *Storage) CheckUserExist(telegramID int64) bool {
-	row := s.db.QueryRow("SELECT 1 FROM users WHERE telegram_id = $1", telegramID)
 	var exists bool
-	err := row.Scan(&exists)
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE telegram_id = $1)", telegramID).Scan(&exists)
 	if err == sql.ErrNoRows {
 		return false
 	}
-	if err != nil {
-		return false
-	}
+	// if err != nil {
+	// 	return false
+	// }
 	log.Println("user exists checked...")
 	return exists
 }

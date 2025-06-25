@@ -90,7 +90,7 @@ func (s *Storage) CreateOrder(userID int64, payment_type string) (string, error)
 	order_id := uuid.New()
 
 	delivery := "0"
-	if !helpers.Haversine(41.275030, 69.264482, float64(lat), float64(lon)) {
+	if !helpers.Haversine(40.989578 ,71.228961, float64(lat), float64(lon)) {
 		delivery = "Yandex Dostavka"
 	}
 	var status string
