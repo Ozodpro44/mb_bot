@@ -218,7 +218,7 @@ func (s *Storage) GetOrderByUserID(userID int64) (*[]models.OrderDetails, error)
         FROM orders
         WHERE user_id = $1
 		ORDER BY created_at DESC
-		LIMIT 1`, user_id)
+		LIMIT 3`, user_id)
 	if err != nil {
 		return &orders, fmt.Errorf("failed to fetch order: %v", err)
 	}

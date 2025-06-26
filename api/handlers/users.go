@@ -1368,6 +1368,12 @@ func formatOrder(order *models.OrderDetails, lang string) string {
 	return fmt.Sprintf(Messages[lang]["order_msg"], order.Order_number, helpers.EscapeMarkdownV2(order.Address.Name_uz), items, order.TotalPrice, order.Delivery_type, order.TotalPrice, order.Payment_type, helpers.EscapeMarkdownV2(status))
 }
 
+type orderMessage struct {
+	orders []*telebot.Message
+}
+
+var orderMessages = make(map[int64]orderMessage)
+
 func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	c.Delete()
 	userID := c.Sender().ID
@@ -1391,7 +1397,9 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 			ReplyMarkup: menu,
 		}
 		message = "❌❌❌"
-		lastMsg[c.Chat().ID], _ = c.Bot().Send(c.Recipient(), message, options)
+		tlbmsg, _ := c.Bot().Send(c.Recipient(), message, options)
+		orderMessages[c.Chat().ID] = orderMessage{orders: []*telebot.Message{tlbmsg}}
+		return nil
 	} else {
 		message = "Your orders:\n"
 		for _, order := range *orders {
@@ -1414,7 +1422,13 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 				ReplyMarkup: menu,
 			}
 
-			lastMsg[c.Chat().ID], err = c.Bot().Send(&telebot.User{ID: userID}, message, options)
+			msg, err := c.Bot().Send(&telebot.User{ID: userID}, message, options)
+			if _, ok := orderMessages[userID]; !ok {
+				orderMessages[userID] = orderMessage{orders: []*telebot.Message{}}
+			}
+			msgs := orderMessages[userID]
+			msgs.orders = append(msgs.orders, msg)
+			orderMessages[userID] = msgs
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -1429,14 +1443,20 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	return nil
 }
 
-// func (h *handlers) BackToMainMenuFromOrders(c telebot.Context) error {
-// 	userID := c.Sender().ID
-// 	lang, err := h.storage.GetLangUser(userID)
-// 	if err != nil {
-// 		return c.Send(err.Error())
-// 	}
-// 	c.Delete()
-// }
+func (h *handlers) BackToMainMenuFromOrders(c telebot.Context) error {
+	userID := c.Sender().ID
+
+	if msgs, ok := orderMessages[userID]; ok {
+		for _, msg := range msgs.orders {
+			if msg != nil {
+				c.Bot().Delete(msg)
+			}
+		}
+		delete(orderMessages, userID)
+	}
+
+	return h.ShowUserMenu(c)
+}
 
 func (h *handlers) CompleteOrder(c telebot.Context) error {
 	userID := c.Sender().ID
