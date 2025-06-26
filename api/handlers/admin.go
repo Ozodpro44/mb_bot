@@ -354,7 +354,13 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	menu.ResizeKeyboard = true
 
 	if c.Callback() == nil {
-		today := time.Now()
+		userLocation := "Asia/Tashkent"
+		location, err := time.LoadLocation(userLocation)
+		if err != nil {
+			log.Println(err)
+		}
+
+		today := time.Now().In(location)
 		formattedDate := today.Format("02.01.2006")
 		formattedTime := today.Format("15:04:05")
 
@@ -428,7 +434,13 @@ func (h *handlers) UpdateAdminPanel(c telebot.Context) error {
 
 	c.Edit("Admin panel: \n⏳", menu)
 
-	today := time.Now()
+	userLocation := "Asia/Tashkent"
+	location, err := time.LoadLocation(userLocation)
+	if err != nil {
+		log.Println(err)
+	}
+
+	today := time.Now().In(location)
 	formattedDate := today.Format("02.01.2006")
 	formattedTime := today.Format("15:04:05")
 
