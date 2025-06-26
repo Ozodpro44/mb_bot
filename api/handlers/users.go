@@ -1644,6 +1644,7 @@ func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
 		if err != nil {
 			fmt.Println(err)
 		}
+		orderMessages[msg.Sender.ID] = orderMessage{orders: []*telebot.Message{msg}}
 		h.storage.SetOrderMsg(orderID, msg.ID)
 	}
 	// m, err := h.storage.GetOrderMsg(order.OrderID)
