@@ -28,7 +28,7 @@ CREATE TABLE products (
 CREATE TABLE cart (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-    quantity INT NOT NULL CHECK (quantity > 0),
+    quantity INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
 

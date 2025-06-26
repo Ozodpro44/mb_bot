@@ -674,6 +674,7 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 		lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, options)
 	}
 	if err != nil {
+		c.Delete()
 		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
 	}
 	return err
