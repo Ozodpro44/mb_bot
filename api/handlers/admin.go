@@ -438,6 +438,8 @@ func (h *handlers) UpdateAdminPanel(c telebot.Context) error {
 
 	c.Edit("Admin panel: \n⏳", menu)
 
+	time.Sleep(500 * time.Millisecond)
+
 	loc := time.FixedZone(fmt.Sprintf("GMT%+d", 5), 5*60*60)
 
 	today := time.Now().In(loc)
