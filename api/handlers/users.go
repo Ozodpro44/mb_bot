@@ -1432,7 +1432,7 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 			if err != nil {
 				fmt.Println(err)
 			}
-			err = h.storage.SetOrderMsg(order.OrderID, lastMsg[c.Chat().ID].ID)
+			err = h.storage.SetOrderMsg(order.OrderID, msg.ID)
 
 			if err != nil {
 				fmt.Println(err)
