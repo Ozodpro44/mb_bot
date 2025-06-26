@@ -425,6 +425,7 @@ func (h *handlers) HandleRegistrationSteps(c telebot.Context) error {
 	delete(registerStep, userID)
 	delete(tempUserData, userID)
 	c.Send(Messages[lang]["done"]+name, &telebot.ReplyMarkup{RemoveKeyboard: true})
+	h.storage.UserMessageStatus(userID, "not")
 	h.ShowUserMenu(c)
 	return nil
 }
