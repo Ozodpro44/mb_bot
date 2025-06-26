@@ -18,6 +18,7 @@ import (
 
 var AdminMessages = map[string]map[string]string{
 	"en": {
+		"admin_panel":          "Admin panel: \nBranch name - %s \nNumber of people - %d \nDay - %s \nTime - %s \nTrade - %d UZS",
 		"add_category":         "Add Category ➕",
 		"add_product":          "Add Product ➕",
 		"add_admin":            "Add Admin 👨‍⚖️",
@@ -91,6 +92,7 @@ var AdminMessages = map[string]map[string]string{
 		"prod_photo_msg":       "Send Photo 🖼️",
 	},
 	"ru": {
+		"admin_panel":			"Панель администратора: \nНазвание филиала - %s \nКоличество людей - %d \nДень - %s \nВремя - %s \nТорговля - %d UZS",
 		"add_category":         "Добавить категорию ➕",
 		"add_product":          "Добавить продукт ➕",
 		"add_admin":            "Добавить админ 👨‍⚖️",
@@ -238,6 +240,7 @@ var AdminMessages = map[string]map[string]string{
 		"prod_photo_msg":       "Rasm yuborish 🖼️",
 	},
 	"tr": {
+		"admin_panel":          "Admin paneli: \nŞube adı - %s \nKişi sayısı - %d \nGün - %s \nSaat - %s \nTicaret - %d UZS",
 		"add_category":         "Kategoriyi Eklemek ➕",
 		"add_product":          "Ürün Eklemek ➕",
 		"add_admin":            "Admin Eklemek 👨‍⚖️",
