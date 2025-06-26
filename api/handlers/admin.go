@@ -312,6 +312,8 @@ var AdminMessages = map[string]map[string]string{
 	},
 }
 
+var admin_messages = map[int64]string{}
+
 func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	userID := c.Sender().ID
 	// fmt.Println(userID)
@@ -350,14 +352,89 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 		menu.Row(update),
 	)
 	menu.ResizeKeyboard = true
-	
-	today := time.Now()
-	formattedDate := today.Format("2006-02-01")
-	formattedTime := today.Format("15:04")
 
-	orders, err := h.storage.GetOrderByDate(formattedDate)
+	if c.Callback() == nil {
+		today := time.Now()
+		formattedDate := today.Format("02.01.2006")
+		formattedTime := today.Format("15:04:05")
+
+		orders, err := h.storage.GetOrderByDate(today)
+		if err != nil {
+			log.Println(err)
+		}
+
+		totalSum := 0
+		for _, order := range *orders {
+			totalSum += order.TotalPrice
+		}
+
+		user, err := h.storage.GetUserCount()
+
+		if err != nil {
+			user = 0
+		}
+
+		admin_messages[userID] = fmt.Sprintf(AdminMessages[lang]["admin_panel"], "Main", user, formattedDate, formattedTime, totalSum)
+	}
+
+	message := admin_messages[userID]
+
+	err = c.EditOrSend(message, menu)
+	if err != nil {
+		c.Send(message, menu)
+	}
+
+	return nil
+}
+
+func (h *handlers) UpdateAdminPanel(c telebot.Context) error {
+	userID := c.Sender().ID
+	// fmt.Println(userID)
+	if !h.storage.CheckAdmin(userID) {
+		return c.Send("You are not admin")
+	}
+
+	lang, err := h.storage.GetAdminLang(userID)
+
 	if err != nil {
 		return c.Send(err.Error())
+	}
+
+	menu := &telebot.ReplyMarkup{}
+
+	// Define the buttons
+	btnCat := menu.Data(AdminMessages[lang]["category_menu"], "category_menu")
+	btnProd := menu.Data(AdminMessages[lang]["product_menu"], "product_menu")
+	btnAdmins := menu.Data(AdminMessages[lang]["add_admin"], "add_admin")
+	btnCloseDay := menu.Data(AdminMessages[lang]["close_day"], "close_day")
+	btnOpenDay := menu.Data(AdminMessages[lang]["open_day"], "open_day")
+	btnFilial := menu.Data(AdminMessages[lang]["branch"], "branch")
+	btnLang := menu.Data(AdminMessages[lang]["change_lang"], "admin_lang")
+	btnGetUsers := menu.Data(AdminMessages[lang]["get_all_users"], "get_all_users")
+	sendAdds := menu.Data(AdminMessages[lang]["adds_btn"], "send_adds")
+	update := menu.Data("🔄", "update")
+
+	// Arrange buttons in rows
+	menu.Inline(
+		menu.Row(btnCat),
+		menu.Row(btnProd, btnAdmins),
+		menu.Row(btnFilial, btnLang),
+		menu.Row(btnCloseDay, btnOpenDay),
+		menu.Row(sendAdds),
+		menu.Row(btnGetUsers),
+		menu.Row(update),
+	)
+	menu.ResizeKeyboard = true
+
+	c.Edit("Admin panel: \n⏳", menu)
+
+	today := time.Now()
+	formattedDate := today.Format("02.01.2006")
+	formattedTime := today.Format("15:04:05")
+
+	orders, err := h.storage.GetOrderByDate(today)
+	if err != nil {
+		log.Println(err)
 	}
 
 	totalSum := 0
@@ -366,20 +443,13 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	}
 
 	user, err := h.storage.GetUserCount()
-	
+
 	if err != nil {
 		user = 0
 	}
 
-
-	message := fmt.Sprintf(AdminMessages[lang]["admin_panel"], "Main", user, formattedDate, formattedTime, totalSum)
-
-	err = c.EditOrSend(message, menu)
-	if err != nil {
-		c.Send(message, menu)
-	}
-
-	return nil
+	admin_messages[userID] = fmt.Sprintf(AdminMessages[lang]["admin_panel"], "Main", user, formattedDate, formattedTime, totalSum)
+	return h.ShowAdminPanel(c)
 }
 
 func (h *handlers) ShowCategoryMenu(c telebot.Context) error {
@@ -838,7 +908,7 @@ func (h *handlers) DeleteCategory(c telebot.Context) error {
 	return c.Send(AdminMessages[lang]["cat_deleted"], menu)
 }
 
-var createCatID int 
+var createCatID int
 
 func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
 	c.Delete()
@@ -864,7 +934,7 @@ func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
 		ReplyMarkup: markup,
 	}
 
-	msg, err := c.Bot().Send(c.Recipient(),AdminMessages[lang]["category"], options)
+	msg, err := c.Bot().Send(c.Recipient(), AdminMessages[lang]["category"], options)
 	createCatID = msg.ID
 	if err != nil {
 		fmt.Println(err)
@@ -874,7 +944,7 @@ func (h *handlers) CreateCategoryHandle(c telebot.Context) error {
 }
 
 func (h *handlers) CreateCategory(c telebot.Context) error {
-	c.Bot().Delete(&telebot.Message{ID: createCatID,Chat: c.Chat()})
+	c.Bot().Delete(&telebot.Message{ID: createCatID, Chat: c.Chat()})
 	c.Delete()
 	text := c.Message().Text
 	userID := c.Sender().ID
@@ -921,14 +991,14 @@ func (h *handlers) CreateCategory(c telebot.Context) error {
 
 	if err != nil {
 		log.Println(err.Error())
-		msg, err := c.Bot().Send(c.Recipient(),"You have Dublicate name",options)
+		msg, err := c.Bot().Send(c.Recipient(), "You have Dublicate name", options)
 		createCatID = msg.ID
 		return err
 	}
 
 	// return c.Respond(&telebot.CallbackResponse{
 	// 	Text: "Category created✅"})
-	
+
 	return c.Send("Category created✅", options)
 }
 

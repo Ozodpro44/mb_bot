@@ -13,7 +13,7 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-const groupID = int64(-4633666523)
+const groupID = int64(-4720688028)
 
 var Messages = map[string]map[string]string{
 	"en": {

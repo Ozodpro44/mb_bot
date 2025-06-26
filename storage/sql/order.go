@@ -5,6 +5,7 @@ import (
 	"bot/models"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -363,12 +364,12 @@ func (s *Storage) GetOrderGroupMsg(orderID string) (int, error) {
 	return order_id, nil
 }
 
-func (s *Storage) GetOrderByDate(date string) (*[]models.OrderDetails, error) {
+func (s *Storage) GetOrderByDate(date time.Time) (*[]models.OrderDetails, error) {
 	var orders []models.OrderDetails
 	rows, err := s.db.Query(`
         SELECT id, order_number, daily_order_number, user_id, total_price, status, created_at, adress, lat, lon, delivery_price, payment_type, phone_number
         FROM orders
-        WHERE created_at::date = $1`, date)
+        WHERE created_at::date = $1 AND status = 'completed'`, date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch orders for date %s: %v", date, err)
 	}

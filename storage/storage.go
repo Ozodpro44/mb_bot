@@ -3,6 +3,7 @@ package storage
 import (
 	// "bot/lib/e"
 	"bot/models"
+	"time"
 	// "crypto/sha1"
 	// "io"
 )
@@ -36,7 +37,7 @@ type Storage interface {
 	DeleteOrderMsg(userID int64) error
 	SetOrderGroupMsg(orderID string, msgID int) error
 	GetOrderGroupMsg(orderID string) (int, error)
-	GetOrderByDate(date string) (*[]models.OrderDetails, error)
+	GetOrderByDate(date time.Time) (*[]models.OrderDetails, error)
 	// // Cart
 	AddToCart(userID int64, productID string, quantity int) error
 	GetCart(userID int64) (*models.Cart, error)

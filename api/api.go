@@ -161,6 +161,8 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "update_photo_of_prod"}, h.UpdateProductPhotoHandle)
 
+	bot.Handle(&telebot.InlineButton{Unique: "update"}, h.UpdateAdminPanel)
+
 	log.Println("Bot started...")
 
 	bot.Start()
