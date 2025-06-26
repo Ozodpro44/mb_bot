@@ -363,3 +363,47 @@ func (s *Storage) GetOrderGroupMsg(orderID string) (int, error) {
 	return order_id, nil
 }
 
+func (s *Storage) GetOrderByDate(date string) (*[]models.OrderDetails, error) {
+	var orders []models.OrderDetails
+	rows, err := s.db.Query(`
+        SELECT id, order_number, daily_order_number, user_id, total_price, status, created_at, adress, lat, lon, delivery_price, payment_type, phone_number
+        FROM orders
+        WHERE DATE(created_at) = $1`, date)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch orders for date %s: %v", date, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		order := models.OrderDetails{}
+		adress := &models.Location{}
+		err := rows.Scan(&order.OrderID, &order.Order_number, &order.Daily_order_number, &order.UserID, &order.TotalPrice, &order.Status, &order.CreatedAt, &adress.Name_uz, &adress.Latitude, &adress.Longitude, &order.Delivery_type, &order.Payment_type, &order.PhoneNumber)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan order: %v", err)
+		}
+
+		// Fetch order items for each order
+		itemRows, err := s.db.Query(`
+            SELECT p.name_uz, p.name_ru, p.name_en, p.name_tr, oi.quantity, p.price
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = $1`, order.OrderID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch order items for order %s: %v", order.OrderID, err)
+		}
+		defer itemRows.Close()
+
+		for itemRows.Next() {
+			item := models.Item{}
+			if err := itemRows.Scan(&item.Name_uz, &item.Name_ru, &item.Name_en, &item.Name_tr, &item.Quantity, &item.Price); err != nil {
+				return nil, fmt.Errorf("failed to scan order item: %v", err)
+			}
+			order.Items = append(order.Items, &item)
+			order.Address = adress
+		}
+
+		orders = append(orders, order)
+	}
+
+	return &orders, nil
+}

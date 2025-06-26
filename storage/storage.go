@@ -20,6 +20,7 @@ type Storage interface {
 	CreateLocation(location *models.Location) (*models.Location, error)
 	GetLocationByID(telegramId int64) (*models.Location, error)
 	DeleteLocationByUserID(telegramID int64) error
+	GetUserCount() (int, error)
 	// // Lang
 	SetLangUser(telegramID int64, lang string) (string, error)
 	GetLangUser(telegramID int64) (string, error)
@@ -35,7 +36,7 @@ type Storage interface {
 	DeleteOrderMsg(userID int64) error
 	SetOrderGroupMsg(orderID string, msgID int) error
 	GetOrderGroupMsg(orderID string) (int, error)
-
+	GetOrderByDate(date string) (*[]models.OrderDetails, error)
 	// // Cart
 	AddToCart(userID int64, productID string, quantity int) error
 	GetCart(userID int64) (*models.Cart, error)

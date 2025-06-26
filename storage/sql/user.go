@@ -219,3 +219,12 @@ func (s *Storage) GetLocationByID(telegramId int64) (*models.Location, error) {
 	return location, nil
 
 }
+
+func (s *Storage) GetUserCount() (int, error) {
+	var count int
+	err := s.db.QueryRow("SELECT count(*) FROM users").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}

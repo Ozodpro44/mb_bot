@@ -164,6 +164,7 @@ var AdminMessages = map[string]map[string]string{
 		"prod_photo_msg":       "Отправить Фото 🖼️",
 	},
 	"uz": {
+		"admin_panel":          "Admin paneli: \nFilial nomi - %s \nOdamlar soni - %d \nKun - %s \nVaqt - %s \nSavdo - %d UZS",
 		"add_category":         "Kategoriya qo'shish ➕",
 		"add_product":          "Mahsulot qo'shish ➕",
 		"add_admin":            "Admin qo'shish 👨‍⚖️",
@@ -336,6 +337,7 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	btnLang := menu.Data(AdminMessages[lang]["change_lang"], "admin_lang")
 	btnGetUsers := menu.Data(AdminMessages[lang]["get_all_users"], "get_all_users")
 	sendAdds := menu.Data(AdminMessages[lang]["adds_btn"], "send_adds")
+	update := menu.Data("🔄", "update")
 
 	// Arrange buttons in rows
 	menu.Inline(
@@ -345,12 +347,36 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 		menu.Row(btnCloseDay, btnOpenDay),
 		menu.Row(sendAdds),
 		menu.Row(btnGetUsers),
+		menu.Row(update),
 	)
 	menu.ResizeKeyboard = true
+	
+	today := time.Now()
+	formattedDate := today.Format("02.01.2006")
+	formattedTime := today.Format("15:04")
 
-	err = c.EditOrSend("Admin panel:", menu)
+	orders, err := h.storage.GetOrderByDate(formattedDate)
 	if err != nil {
-		c.Send("Admin panel:", menu)
+		return c.Send(err.Error())
+	}
+
+	totalSum := 0
+	for _, order := range *orders {
+		totalSum += order.TotalPrice
+	}
+
+	user, err := h.storage.GetUserCount()
+	
+	if err != nil {
+		user = 0
+	}
+
+
+	message := fmt.Sprintf(AdminMessages[lang]["admin_panel"], "Main", user, formattedDate, formattedTime, totalSum)
+
+	err = c.EditOrSend(message, menu)
+	if err != nil {
+		c.Send(message, menu)
 	}
 
 	return nil
