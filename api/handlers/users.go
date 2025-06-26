@@ -295,7 +295,7 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	}
 
 	if lastMsg[c.Chat().ID] != nil {
-	// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
+		// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
 		c.Bot().Delete(lastMsg[c.Chat().ID])
 	}
 
@@ -1644,7 +1644,9 @@ func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-		orderMessages[msg.Sender.ID] = orderMessage{orders: []*telebot.Message{msg}}
+		msgs := orderMessages[order.Address.UserID]
+		msgs.orders = append(msgs.orders, msg)
+		orderMessages[order.Address.UserID] = msgs
 		h.storage.SetOrderMsg(orderID, msg.ID)
 	}
 	// m, err := h.storage.GetOrderMsg(order.OrderID)
