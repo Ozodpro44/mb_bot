@@ -1478,7 +1478,7 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	message := helpers.EscapeMarkdownV2(Messages[lang]["succsess"]) + formatOrder(orderDetails, lang)
 	menu := &telebot.ReplyMarkup{}
 	btnCancel := menu.Data(Messages[lang]["cancel_order"], "cancel_order", orderID)
-	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+	btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu_from_orders")
 	menu.Inline(
 		menu.Row(btnCancel),
 		menu.Row(btnBack),
