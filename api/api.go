@@ -163,6 +163,8 @@ func Api(o *Options) {
 
 	bot.Handle(&telebot.InlineButton{Unique: "update"}, h.UpdateAdminPanel)
 
+	bot.Handle(&telebot.InlineButton{Unique: "back_to_user_menu_from_orders"}, h.BackToMainMenuFromOrders)
+
 	log.Println("Bot started...")
 
 	bot.Start()

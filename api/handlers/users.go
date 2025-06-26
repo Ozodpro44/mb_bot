@@ -1405,7 +1405,7 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 		for _, order := range *orders {
 			message += formatOrder(&order, lang)
 			menu := &telebot.ReplyMarkup{}
-			btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+			btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu_from_orders")
 			if order.Status == "pending" || order.Status == "preparing" {
 				btnCancel := menu.Data(Messages[lang]["cancel_order"], "cancel_order", order.OrderID)
 				menu.Inline(
