@@ -296,7 +296,9 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 
 	if lastMsg[c.Chat().ID] != nil {
 		// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
-		c.Bot().Delete(lastMsg[c.Chat().ID])
+		if c.Message() == nil {
+			c.Bot().Delete(lastMsg[c.Chat().ID])
+		}
 	}
 
 	// var msg = &telebot.Message{}
@@ -1641,13 +1643,22 @@ func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
 			ID:   msg.MsgID,
 			Chat: &telebot.Chat{ID: msg.UserID},
 		})
+		if msgs, ok := orderMessages[msg.UserID]; ok {
+			for _, msg := range msgs.orders {
+				if msg != nil {
+					c.Bot().Delete(msg)
+				}
+			}
+			delete(orderMessages, msg.UserID)
+		}
+		h.ShowUserMenu(c)
 		msg, err := c.Bot().Send(telebot.ChatID(msg.UserID), message, options)
 		if err != nil {
 			fmt.Println(err)
 		}
-		msgs := orderMessages[msg.Sender.ID]
-		msgs.orders = append(msgs.orders, msg)
-		orderMessages[msg.Sender.ID] = msgs
+		// msgs := orderMessages[msg.Sender.ID]
+		// msgs.orders = append(msgs.orders, msg)
+		// orderMessages[msg.Sender.ID] = msgs
 		h.storage.SetOrderMsg(orderID, msg.ID)
 	}
 	// m, err := h.storage.GetOrderMsg(order.OrderID)
