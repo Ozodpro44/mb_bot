@@ -368,7 +368,7 @@ func (s *Storage) GetOrderByDate(date string) (*[]models.OrderDetails, error) {
 	rows, err := s.db.Query(`
         SELECT id, order_number, daily_order_number, user_id, total_price, status, created_at, adress, lat, lon, delivery_price, payment_type, phone_number
         FROM orders
-        WHERE DATE(created_at) = $1`, date)
+        WHERE created_at::date = $1`, date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch orders for date %s: %v", date, err)
 	}
