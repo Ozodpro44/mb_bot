@@ -352,7 +352,7 @@ func (h *handlers) ShowAdminPanel(c telebot.Context) error {
 	menu.ResizeKeyboard = true
 	
 	today := time.Now()
-	formattedDate := today.Format("02.01.2006")
+	formattedDate := today.Format("02-01-2006")
 	formattedTime := today.Format("15:04")
 
 	orders, err := h.storage.GetOrderByDate(formattedDate)
