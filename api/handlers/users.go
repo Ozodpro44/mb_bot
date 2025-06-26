@@ -296,7 +296,7 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 
 	if lastMsg[c.Chat().ID] != nil {
 		// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
-		if c.Message() == nil {
+		if c.Message().Text == "/start" {
 			c.Bot().Delete(lastMsg[c.Chat().ID])
 		}
 	}
@@ -1651,7 +1651,7 @@ func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
 			}
 			delete(orderMessages, msg.UserID)
 		}
-		h.ShowUserMenu(c)
+		// h.ShowUserMenu(c)
 		msg, err := c.Bot().Send(telebot.ChatID(msg.UserID), message, options)
 		if err != nil {
 			fmt.Println(err)
