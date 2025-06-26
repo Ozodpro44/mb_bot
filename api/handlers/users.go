@@ -1388,7 +1388,7 @@ func (h *handlers) ShowUserOrders(c telebot.Context) error {
 	message := ""
 	if len(*orders) == 0 {
 		menu := &telebot.ReplyMarkup{}
-		btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu")
+		btnBack := menu.Data(Messages[lang]["back"], "back_to_user_menu_from_orders")
 		menu.Inline(
 			menu.Row(btnBack),
 		)
@@ -1626,7 +1626,7 @@ func (h *handlers) ChangeOrderStatus(c telebot.Context) error {
 	if msg.MsgID != 0 {
 		message := helpers.EscapeMarkdownV2(Messages[msg.Lang]["succsess"]) + formatOrder(order, msg.Lang)
 		menu := &telebot.ReplyMarkup{}
-		btnBack := menu.Data(Messages[msg.Lang]["back"], "back_to_user_menu")
+		btnBack := menu.Data(Messages[msg.Lang]["back"], "back_to_user_menu_from_orders")
 		menu.Inline(menu.Row(btnBack))
 		options := &telebot.SendOptions{
 			ParseMode:   telebot.ModeMarkdownV2,
