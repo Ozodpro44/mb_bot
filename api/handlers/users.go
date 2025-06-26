@@ -294,11 +294,9 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 		log.Fatal(err)
 	}
 
-	if lastMsg[c.Chat().ID] != nil {
+	if lastMsg[c.Chat().ID] != nil || c.Message().Text == "/start"{
 		// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
-		if c.Message().Text == "/start" {
-			c.Bot().Delete(lastMsg[c.Chat().ID])
-		}
+	c.Bot().Delete(lastMsg[c.Chat().ID])
 	}
 
 	// var msg = &telebot.Message{}
