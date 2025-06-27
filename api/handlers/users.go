@@ -308,13 +308,18 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 	menu := &telebot.ReplyMarkup{}
 
 	// Define the buttons
-	btnTil := menu.Data(Messages[lang]["lang_btn"], "lang_btn")
-	btnZakaz := menu.Data(Messages[lang]["order_btn"], "order_btn")
-	btnBuyurtmalarim := menu.Data(Messages[lang]["my_orders"], "my_orders")
-	btnBizHaqimida := menu.Data(Messages[lang]["about_us"], "about_us")
+	// btnTil := menu.Data(Messages[lang]["lang_btn"], "lang_btn")
+	// btnZakaz := menu.Data(Messages[lang]["order_btn"], "order_btn")
+	// btnBuyurtmalarim := menu.Data(Messages[lang]["my_orders"], "my_orders")
+	// btnBizHaqimida := menu.Data(Messages[lang]["about_us"], "about_us")
+
+	btnTil := menu.Text(Messages[lang]["lang_btn"])
+	btnZakaz := menu.Text(Messages[lang]["order_btn"])
+	btnBuyurtmalarim := menu.Text(Messages[lang]["my_orders"])
+	btnBizHaqimida := menu.Text(Messages[lang]["about_us"])
 
 	// Arrange buttons in rows
-	menu.Inline(
+	menu.Reply(
 		menu.Row(btnZakaz),
 		menu.Row(btnTil, btnBuyurtmalarim),
 		menu.Row(btnBizHaqimida),
@@ -475,6 +480,16 @@ func (h *handlers) RequestLocation(c telebot.Context) error {
 
 	return c.Send(Messages[lang]["location_msg"], option)
 }
+
+// 
+// func (h *handlers) HandleNote(c telebot.Context) error {
+// 	userID := c.Sender().ID
+// 	note := c.Message().Text
+
+// 	h.storage.SetOrderNote(userID, note)
+
+// 	return h.ChoosePaymentType(c)
+// }
 
 func (h *handlers) HandleLocation(c telebot.Context) error {
 	userID := c.Sender().ID

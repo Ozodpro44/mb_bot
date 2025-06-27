@@ -31,6 +31,38 @@ func Api(o *Options) {
 
 	bot.Handle(telebot.OnPhoto, h.AdminPhotostatus)
 
+	bot.Handle(handlers.Messages["uz"]["lang_btn"], h.ChangeLanguage)
+
+	bot.Handle(handlers.Messages["ru"]["lang_btn"], h.ChangeLanguage)
+
+	bot.Handle(handlers.Messages["en"]["lang_btn"], h.ChangeLanguage)
+
+	bot.Handle(handlers.Messages["tr"]["lang_btn"], h.ChangeLanguage)
+
+	bot.Handle(handlers.Messages["uz"]["order_btn"], h.ShowMenu)
+
+	bot.Handle(handlers.Messages["ru"]["order_btn"], h.ShowMenu)
+
+	bot.Handle(handlers.Messages["en"]["order_btn"], h.ShowMenu)
+
+	bot.Handle(handlers.Messages["tr"]["order_btn"], h.ShowMenu)
+
+	bot.Handle(handlers.Messages["uz"]["my_orders"], h.ShowUserOrders)
+
+	bot.Handle(handlers.Messages["ru"]["my_orders"], h.ShowUserOrders)
+
+	bot.Handle(handlers.Messages["en"]["my_orders"], h.ShowUserOrders)
+
+	bot.Handle(handlers.Messages["tr"]["my_orders"], h.ShowUserOrders)
+
+	bot.Handle(handlers.Messages["uz"]["about_us"], h.SendAboutUs)
+
+	bot.Handle(handlers.Messages["ru"]["about_us"], h.SendAboutUs)
+
+	bot.Handle(handlers.Messages["en"]["about_us"], h.SendAboutUs)
+
+	bot.Handle(handlers.Messages["tr"]["about_us"], h.SendAboutUs)
+
 	// bot.Handle(&telebot.InlineButton{Unique: "payment_type"}, h.SetPaymentType)
 
 	bot.Handle(&telebot.InlineButton{Unique: "continue_order"}, h.ShowMenu)
