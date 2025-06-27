@@ -376,7 +376,7 @@ func (h *handlers) SendAboutUs(c telebot.Context) error {
 	btnBack := markup.Data(Messages[lang]["back"], "back_to_user_menu")
 	markup.Inline(markup.Row(btnBack))
 
-	lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], "MB DONER, Yakkasaroy tumani, 49/1", markup)
+	lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), "MB DONER, Yakkasaroy tumani, 49/1", markup)
 	return err
 }
 
@@ -690,7 +690,7 @@ func (h *handlers) ShowMenu(c telebot.Context) error {
 		lastMsg[c.Chat().ID], err = c.Bot().Edit(lastMsg[c.Chat().ID], message, options)
 	}
 	if err != nil {
-		c.Delete()
+		// c.Delete()
 		lastMsg[c.Chat().ID], err = c.Bot().Send(c.Recipient(), message, options)
 	}
 	return err
@@ -1319,7 +1319,7 @@ func (h *handlers) ChangeLanguage(c telebot.Context) error {
 		menu.Row(btnEN, btnTR),
 		menu.Row(btnBack),
 	)
-	c.Edit(Messages[lang]["language_prompt"], menu)
+	c.Send(Messages[lang]["language_prompt"], menu)
 
 	return nil
 }
@@ -1392,7 +1392,7 @@ type orderMessage struct {
 var orderMessages = make(map[int64]orderMessage)
 
 func (h *handlers) ShowUserOrders(c telebot.Context) error {
-	c.Delete()
+	// c.Delete()
 	userID := c.Sender().ID
 	lang, err := h.storage.GetLangUser(userID)
 	if err != nil {
