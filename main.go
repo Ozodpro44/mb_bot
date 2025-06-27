@@ -58,7 +58,7 @@ func main() {
 		R:       r,
 	})
 
-	r.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
+	// r.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
 
 	// Products
 
