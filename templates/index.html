@@ -143,6 +143,8 @@
         }
 
         const products = await res.json();
+        console.log("Loaded products:", products);
+
         const list = document.getElementById("productList");
         list.innerHTML = "";
 
@@ -152,7 +154,7 @@
           div.innerHTML = `
             <b>${p.name}</b> — ${p.price} so'm<br>
             <img src="${p.photo}" alt="${p.name}"><br>
-            <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, '${p.photo}', ${p.category_id})">✏️ Edit</button>
+            <button onclick="editProduct(${JSON.stringify(p.id)}, ${JSON.stringify(p.name)}, ${p.price}, '${p.photo}', ${JSON.stringify(p.category_id)})">✏️ Edit</button>
             <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
           `;
           list.appendChild(div);
