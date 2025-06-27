@@ -49,8 +49,8 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-		json.NewEncoder(w).Encode(products)
-	}
+	json.NewEncoder(w).Encode(products)
+}
 
 func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20) // 10MB
