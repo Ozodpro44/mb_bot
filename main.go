@@ -58,8 +58,7 @@ func main() {
 		R:       r,
 	})
 
-	fs := http.FileServer(http.Dir("./photos"))
-	http.Handle("/photos/", http.StripPrefix("/photos/", fs))
+	r.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
 
 	// Products
 
