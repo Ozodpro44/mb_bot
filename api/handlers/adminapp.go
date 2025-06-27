@@ -97,7 +97,11 @@ func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dst.Close()
-	io.Copy(dst, file)
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		http.Error(w, "Can't save file", http.StatusInternalServerError)
+		return
+	}
 
 	h.storage.CreateProduct(&models.Product{
 		Name_uz:     name_uz,

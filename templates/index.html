@@ -156,9 +156,9 @@
           div.className = "item";
           div.innerHTML = `
             <b>${p.name_uz}</b> — ${p.price} so'm<br>
-            <b>${p.name_ru}</b>
-            <b>${p.name_en}</b>
-            <b>${p.name_tr}</b>
+            <b>${p.name_ru}</br>
+            <b>${p.name_en}</br>
+            <b>${p.name_tr}</br>
             <img src="${p.photo}" alt="${p.name_uz}"><br>
             <button onclick="editProduct(${JSON.stringify(p.id)}, '${p.name_uz}','${p.name_ru}','${p.name_en}','${p.name_tr}', ${p.price}, '${p.photo}', ${JSON.stringify(p.category_id)})">✏️ Edit</button>
             <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
@@ -187,7 +187,7 @@
         alert("⚠️ Please fill all fields and upload a photo.");
         return;
       }
-
+      const form = e.t
       const formData = new FormData();
       formData.append("name_uz", name_uz);
       formData.append("name_ru", name_ru);
@@ -265,6 +265,9 @@
       const res = await fetch(`${API}/categories`);
       const cats = await res.json();
       const list = document.getElementById("categoryList");
+
+      document.getElementById("productPreview").appendChild(img);
+
       list.innerHTML = "";
 
       cats.forEach(cat => {
