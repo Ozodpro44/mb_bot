@@ -3,7 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"strconv"
 	// "github.com/gorilla/mux"
 )
 
@@ -30,8 +33,49 @@ type Product struct {
 // 		products = append(products, p)
 // 	}
 
-// 	json.NewEncoder(w).Encode(products)
-// }
+//		json.NewEncoder(w).Encode(products)
+//	}
+func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20) // 10MB
+	if err != nil {
+		http.Error(w, "Can't parse form", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	priceStr := r.FormValue("price")
+	categoryIDStr := r.FormValue("category_id")
+	price, _ := strconv.Atoi(priceStr)
+	categoryID, _ := strconv.Atoi(categoryIDStr)
+
+	file, handler, err := r.FormFile("photo")
+	if err != nil {
+		http.Error(w, "Photo required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Save the file
+	dst, err := os.Create("./photos/" + handler.Filename)
+	if err != nil {
+		http.Error(w, "Can't save file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+	io.Copy(dst, file)
+
+	// Save product to DB with photo name
+	// _, err = db.Exec(`INSERT INTO products (name, price, photo, category_id) VALUES ($1, $2, $3, $4)`,
+	// 	name, price, "/photos/"+handler.Filename, categoryID)
+
+	// if err != nil {
+	// 	http.Error(w, "DB error", 500)
+	// 	return
+	// }
+	fmt.Println(name, price, "/photos/"+handler.Filename, categoryID)
+
+	w.WriteHeader(http.StatusCreated)
+}
 
 func (h *handlers) AddProductSite(w http.ResponseWriter, r *http.Request) {
 	var p Product
