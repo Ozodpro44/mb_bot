@@ -8,7 +8,25 @@ import (
 )
 
 func (s *Storage) GetAllProducts() (*models.Products, error) {
-	return nil, nil
+	rows, err := s.db.Query(`
+        SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description, categories_id
+        FROM products
+        WHERE is_active = true
+		ORDER BY name_uz ASC`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch products: %v", err)
+	}
+	defer rows.Close()
+	var products models.Products
+	for rows.Next() {
+		product := models.Product{}
+		if err := rows.Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description, &product.Category_id); err != nil {
+			return nil, fmt.Errorf("failed to scan product: %v", err)
+		}
+		products.Products = append(products.Products, &product)
+	}
+
+	return &products, nil
 }
 
 func (s *Storage) CreateProduct(product *models.Product) (*models.Product, error) {
