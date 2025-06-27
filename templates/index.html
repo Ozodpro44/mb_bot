@@ -69,7 +69,10 @@
 
   <div class="section">
     <h3>Add Product</h3>
-    <input id="pname" placeholder="Product name">
+    <input id="pname_uz" placeholder="Product name uz">
+    <input id="pname_ru" placeholder="Product name ru">
+    <input id="pname_en" placeholder="Product name en">
+    <input id="pname_tr" placeholder="Product name tr">
     <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
     <input id="pphoto" type="file" accept="image/*">
     <select id="pcategory"></select>
@@ -152,9 +155,12 @@
           const div = document.createElement("div");
           div.className = "item";
           div.innerHTML = `
-            <b>${p.name}</b> — ${p.price} so'm<br>
-            <img src="${p.photo}" alt="${p.name}"><br>
-            <button onclick="editProduct(${JSON.stringify(p.id)}, ${JSON.stringify(p.name)}, ${p.price}, '${p.photo}', ${JSON.stringify(p.category_id)})">✏️ Edit</button>
+            <b>${p.name_uz}</b> — ${p.price} so'm<br>
+            <b>${p.name_ru}</b>
+            <b>${p.name_en}</b>
+            <b>${p.name_tr}</b>
+            <img src="${p.photo}" alt="${p.name_uz}"><br>
+            <button onclick="editProduct(${JSON.stringify(p.id)}, '${p.name_uz}','${p.name_ru}','${p.name_en}','${p.name_tr}', ${p.price}, '${p.photo}', ${JSON.stringify(p.category_id)})">✏️ Edit</button>
             <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
           `;
           list.appendChild(div);
@@ -168,19 +174,25 @@
 
 
     async function addProduct() {
-      const name = document.getElementById("pname").value;
+      const name_uz = document.getElementById("pname_uz").value;
+      const name_ru = document.getElementById("pname_ru").value;
+      const name_en = document.getElementById("pname_en").value;
+      const name_tr = document.getElementById("pname_tr").value;
       const price = parseInt(document.getElementById("pprice").value);
       const categoryId = parseInt(document.getElementById("pcategory").value);
       const photoInput = document.getElementById("pphoto");
       const photoFile = photoInput.files[0];
 
-      if (!name || !price || !categoryId || !photoFile) {
+      if (!name_uz || !name_ru || !name_en || !name_tr || !price || !categoryId || !photoFile) {
         alert("⚠️ Please fill all fields and upload a photo.");
         return;
       }
 
       const formData = new FormData();
-      formData.append("name", name);
+      formData.append("name_uz", name_uz);
+      formData.append("name_ru", name_ru);
+      formData.append("name_en", name_en);
+      formData.append("name_tr", name_tr);
       formData.append("price", price);
       formData.append("category_id", categoryId);
       formData.append("photo", photoFile);
@@ -199,8 +211,11 @@
     }
 
 
-    function editProduct(id, name, price, photo, category_id) {
-      const newName = prompt("New name:", name) || name;
+    function editProduct(id, name_uz, name_ru, name_en, name_tr, price, photo, category_id) {
+      const newName_uz = prompt("New name uz:", name_uz) || name_uz;
+      const newName_ru = prompt("New name ru:", name_ru) || name_ru;
+      const newName_en = prompt("New name en:", name_en) || name_en;
+      const newName_tr = prompt("New name tr:", name_tr) || name_tr;
       const newPrice = parseInt(prompt("New price:", price) || price);
       const newPhoto = prompt("New photo URL:", photo) || photo;
 
@@ -208,7 +223,10 @@
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: newName,
+          name_uz: newName_uz,
+          name_ru: newName_ru,
+          name_en: newName_en,
+          name_tr: newName_tr,
           price: newPrice,
           photo: newPhoto,
           category_id: category_id

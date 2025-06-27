@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bot/models"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,11 +12,14 @@ import (
 )
 
 type Product struct {
-	// ID         int    `json:"id"`
-	Name       string `json:"name"`
+	ID         string `json:"id"`
+	Name_uz    string `json:"name_uz"`
+	Name_ru    string `json:"name_ru"`
+	Name_en    string `json:"name_en"`
+	Name_tr    string `json:"name_tr"`
 	Price      int    `json:"price"`
 	Photo      string `json:"photo"`
-	CategoryID int    `json:"category_id"`
+	CategoryID string `json:"category_id"`
 }
 
 func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +35,10 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	var products []struct {
 		ID         string `json:"id"`
-		Name       string `json:"name"`
+		Name_uz    string `json:"name_uz"`
+		Name_ru    string `json:"name_ru"`
+		Name_en    string `json:"name_en"`
+		Name_tr    string `json:"name_tr"`
 		Price      int    `json:"price"`
 		Photo      string `json:"photo"`
 		CategoryID string `json:"category_id"`
@@ -39,14 +46,20 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 	for _, p := range prod.Products {
 		products = append(products, struct {
 			ID         string `json:"id"`
-			Name       string `json:"name"`
+			Name_uz    string `json:"name_uz"`
+			Name_ru    string `json:"name_ru"`
+			Name_en    string `json:"name_en"`
+			Name_tr    string `json:"name_tr"`
 			Price      int    `json:"price"`
 			Photo      string `json:"photo"`
 			CategoryID string `json:"category_id"`
 		}{
 			ID:         p.ID,
-			Name:       p.Name_uz,
-			Price:      p.Price,	
+			Name_uz:    p.Name_uz,
+			Name_ru:    p.Name_ru,
+			Name_en:    p.Name_en,
+			Name_tr:    p.Name_tr,
+			Price:      p.Price,
 			Photo:      p.Photo,
 			CategoryID: p.Category_id,
 		})
@@ -62,11 +75,13 @@ func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.FormValue("name")
+	name_uz := r.FormValue("name_uz")
+	name_ru := r.FormValue("name_ru")
+	name_en := r.FormValue("name_en")
+	name_tr := r.FormValue("name_tr")
 	priceStr := r.FormValue("price")
-	categoryIDStr := r.FormValue("category_id")
+	categoryID := r.FormValue("category_id")
 	price, _ := strconv.Atoi(priceStr)
-	categoryID, _ := strconv.Atoi(categoryIDStr)
 
 	file, handler, err := r.FormFile("photo")
 	if err != nil {
@@ -84,15 +99,15 @@ func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 	defer dst.Close()
 	io.Copy(dst, file)
 
-	// Save product to DB with photo name
-	// _, err = db.Exec(`INSERT INTO products (name, price, photo, category_id) VALUES ($1, $2, $3, $4)`,
-	// 	name, price, "/photos/"+handler.Filename, categoryID)
-
-	// if err != nil {
-	// 	http.Error(w, "DB error", 500)
-	// 	return
-	// }
-	fmt.Println(name, price, "/photos/"+handler.Filename, categoryID)
+	h.storage.CreateProduct(&models.Product{
+		Name_uz:     name_uz,
+		Name_ru:     name_ru,
+		Name_en:     name_en,
+		Name_tr:     name_tr,
+		Price:       price,
+		Photo:       handler.Filename,
+		Category_id: categoryID,
+	})
 
 	w.WriteHeader(http.StatusCreated)
 }
