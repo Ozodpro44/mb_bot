@@ -18,23 +18,40 @@ type Product struct {
 	CategoryID int    `json:"category_id"`
 }
 
-// func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
-// 	rows, err := db.Query("SELECT id, name, price, photo, category_id FROM products")
-// 	if err != nil {
-// 		http.Error(w, err.Error(), 500)
-// 		return
-// 	}
-// 	defer rows.Close()
+func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
+	prod, err := h.storage.GetAllProducts()
 
-// 	var products []Product
-// 	for rows.Next() {
-// 		var p Product
-// 		rows.Scan(&p.ID, &p.Name, &p.Price, &p.Photo, &p.CategoryID)
-// 		products = append(products, p)
-// 	}
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-//		json.NewEncoder(w).Encode(products)
-//	}
+	var products []struct {
+		ID         string `json:"id"`
+		Name       string `json:"name"`
+		Price      int    `json:"price"`
+		Photo      string `json:"photo"`
+		CategoryID string `json:"category_id"`
+	}
+	for _, p := range prod.Products {
+		products = append(products, struct {
+			ID         string `json:"id"`
+			Name       string `json:"name"`
+			Price      int    `json:"price"`
+			Photo      string `json:"photo"`
+			CategoryID string `json:"category_id"`
+		}{
+			ID:         p.ID,
+			Name:       p.Name_uz,
+			Price:      p.Price,
+			Photo:      p.Photo,
+			CategoryID: p.Category_id,
+		})
+	}
+
+		json.NewEncoder(w).Encode(products)
+	}
+
 func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20) // 10MB
 	if err != nil {
