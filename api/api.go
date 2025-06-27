@@ -4,13 +4,16 @@ import (
 	"bot/api/handlers"
 	"bot/storage"
 	"log"
+	"net/http"
 
+	"github.com/gorilla/mux"
 	"gopkg.in/telebot.v3"
 )
 
 type Options struct {
 	Tg      telebot.Settings
 	Storage storage.Storage
+	R       *mux.Router
 }
 
 func Api(o *Options) {
@@ -150,7 +153,7 @@ func Api(o *Options) {
 	bot.Handle(&telebot.InlineButton{Unique: "delete_cat"}, h.DeleteCategoryHandle)
 
 	bot.Handle(&telebot.InlineButton{Unique: "delete_cat_yes"}, h.DeleteCategory)
-	
+
 	bot.Handle(&telebot.InlineButton{Unique: "back_to_admin_menu"}, h.ShowAdminPanel)
 
 	bot.Handle(&telebot.InlineButton{Unique: "product_menu"}, h.ShowProductMenu)
@@ -200,4 +203,23 @@ func Api(o *Options) {
 	log.Println("Bot started...")
 
 	bot.Start()
+
+	// o.R.HandleFunc("/api/products", GetProducts).Methods("GET")
+	o.R.HandleFunc("/api/products", h.AddProductSite).Methods("POST")
+	// o.R.HandleFunc("/api/products/{id}", UpdateProduct).Methods("PUT")
+	// o.R.HandleFunc("/api/products/{id}", DeleteProduct).Methods("DELETE")
+
+	// Categories
+	// o.R.HandleFunc("/api/categories", GetCategories).Methods("GET")
+	// o.R.HandleFunc("/api/categories", AddCategory).Methods("POST")
+	// o.R.HandleFunc("/api/categories/{id}", UpdateCategory).Methods("PUT")
+	// o.R.HandleFunc("/api/categories/{id}", DeleteCategory).Methods("DELETE")
+
+	// Admins
+	// o.R.HandleFunc("/api/admins", GetAdmins).Methods("GET")
+	// o.R.HandleFunc("/api/admins", h.AddAdmin).Methods("POST")
+	// o.R.HandleFunc("/api/admins/{id}", UpdateAdmin).Methods("PUT")
+	// o.R.HandleFunc("/api/admins/{id}", DeleteAdmin).Methods("DELETE")
+
+	http.ListenAndServe(":8080", o.R)
 }

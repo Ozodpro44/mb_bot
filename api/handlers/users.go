@@ -270,7 +270,14 @@ func (h *handlers) HandleLanguage(c telebot.Context) error {
 		menu.Row(btnRU, btnUZ),
 		menu.Row(btnEN, btnTR),
 	)
-	return c.Send(Messages["en"]["language_prompt"], menu)
+
+	nokeyb := &telebot.ReplyMarkup{
+		RemoveKeyboard: true,
+	}
+
+	msg, _ := c.Bot().Send(c.Recipient(), Messages["en"]["language_prompt"], nokeyb)
+	_, err := c.Bot().Edit(msg, Messages["en"]["language_prompt"], menu)
+	return err
 
 }
 
@@ -294,7 +301,7 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 		log.Fatal(err)
 	}
 
-	if lastMsg[c.Chat().ID] != nil && c.Message().Text != "/start"{
+	if lastMsg[c.Chat().ID] != nil && c.Message().Text != "/start" {
 		// 	lastMsg[c.Chat().ID], _ = c.Bot().Edit(lastMsg[c.Chat().ID], Messages[lang]["wait_msg"])
 		c.Bot().Delete(lastMsg[c.Chat().ID])
 	}
@@ -325,6 +332,7 @@ func (h *handlers) ShowUserMenu(c telebot.Context) error {
 		menu.Row(btnBizHaqimida),
 	)
 	menu.ResizeKeyboard = true
+	menu.OneTimeKeyboard = true
 
 	// Send the menu to the user
 	message := Messages[lang]["user_menu"]
@@ -481,7 +489,7 @@ func (h *handlers) RequestLocation(c telebot.Context) error {
 	return c.Send(Messages[lang]["location_msg"], option)
 }
 
-// 
+//
 // func (h *handlers) HandleNote(c telebot.Context) error {
 // 	userID := c.Sender().ID
 // 	note := c.Message().Text

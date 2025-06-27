@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    h2, h3 {
+      color: #333;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      display: block;
+      width: 100%;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #0a84ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #006fe0;
+    }
+
+    img {
+      max-width: 100px;
+      margin-top: 0.5rem;
+    }
+
+    .item {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .item button {
+      width: auto;
+      margin-right: 0.5rem;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h2>⚙️ Admin Panel</h2>
+
+  <div class="section">
+    <h3>Add Product</h3>
+    <input id="pname" placeholder="Product name">
+    <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
+    <input id="pphoto" type="file" accept="image/*">
+    <select id="pcategory"></select>
+    <button onclick="addProduct()">➕ Add Product</button>
+  </div>
+
+  <div class="section">
+    <h3>All Products</h3>
+    <div id="productList">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h3>Categories</h3>
+    <input id="catName" placeholder="New Category Name">
+    <button onclick="addCategory()">➕ Add Category</button>
+    <div id="categoryList">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h3>Admins</h3>
+    <input id="adminId" placeholder="Telegram ID (int64)">
+    <button onclick="addAdmin()">➕ Add Admin</button>
+    <div id="adminList">Loading...</div>
+  </div>
+
+  <script>
+    // 💡 Change this to your backend URL
+    const API = "https://mbbot-production.up.railway.app/api";
+
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    async function fetchCategories() {
+      const res = await fetch(`${API}/categories`);
+      const categories = await res.json();
+      const select = document.getElementById("pcategory");
+      select.innerHTML = "";
+      categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        select.appendChild(opt);
+      });
+    }
+
+    async function loadProducts() {
+      const res = await fetch(`${API}/products`);
+      const products = await res.json();
+      const list = document.getElementById("productList");
+      list.innerHTML = "";
+
+      products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <b>${p.name}</b> — ${p.price} so'm<br>
+          <img src="${p.photo}" alt="${p.name}"><br>
+          <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, '${p.photo}', ${p.category_id})">✏️ Edit</button>
+          <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function addProduct() {
+      const name = document.getElementById("pname").value;
+      const price = parseInt(document.getElementById("pprice").value);
+      const categoryId = parseInt(document.getElementById("pcategory").value);
+      const photoInput = document.getElementById("pphoto");
+      const photoFile = photoInput.files[0];
+
+      if (!name || !price || !categoryId || !photoFile) {
+        alert("⚠️ Please fill all fields and upload a photo.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("price", price);
+      formData.append("category_id", categoryId);
+      formData.append("photo", photoFile);
+
+      const res = await fetch(`${API}/products`, {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        alert("✅ Product added");
+        loadProducts();
+      } else {
+        alert("❌ Failed to add product");
+      }
+    }
+
+
+    function editProduct(id, name, price, photo, category_id) {
+      const newName = prompt("New name:", name) || name;
+      const newPrice = parseInt(prompt("New price:", price) || price);
+      const newPhoto = prompt("New photo URL:", photo) || photo;
+
+      fetch(`${API}/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newName,
+          price: newPrice,
+          photo: newPhoto,
+          category_id: category_id
+        })
+      }).then(res => {
+        res.ok ? (alert("✅ Product updated"), loadProducts()) : alert("❌ Failed to update");
+      });
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm("Delete this product?")) return;
+      const res = await fetch(`${API}/products/${id}`, { method: "DELETE" });
+      res.ok ? (alert("✅ Deleted"), loadProducts()) : alert("❌ Failed");
+    }
+
+    async function addCategory() {
+      const name = document.getElementById("catName").value;
+      if (!name) return alert("Enter category name");
+
+      const res = await fetch(`${API}/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        alert("✅ Category added");
+        fetchCategories();
+        loadCategories();
+      } else {
+        alert("❌ Failed to add");
+      }
+    }
+
+    async function loadCategories() {
+      const res = await fetch(`${API}/categories`);
+      const cats = await res.json();
+      const list = document.getElementById("categoryList");
+      list.innerHTML = "";
+
+      cats.forEach(cat => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <b>${cat.name}</b><br>
+          <button onclick="editCategory(${cat.id}, '${cat.name}')">✏️ Edit</button>
+          <button onclick="deleteCategory(${cat.id})">🗑️ Delete</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function editCategory(id, oldName) {
+      const newName = prompt("New category name:", oldName);
+      if (!newName || newName === oldName) return;
+
+      fetch(`${API}/categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName })
+      }).then(res => {
+        res.ok ? (alert("✅ Updated"), loadCategories()) : alert("❌ Failed to update");
+      });
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm("Delete this category?")) return;
+      const res = await fetch(`${API}/categories/${id}`, { method: "DELETE" });
+      res.ok ? (alert("✅ Deleted"), loadCategories()) : alert("❌ Failed");
+    }
+
+    async function addAdmin() {
+      const telegramId = document.getElementById("adminId").value;
+      if (!telegramId) return alert("Enter Telegram ID");
+
+      const res = await fetch(`${API}/admins`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_id: parseInt(telegramId) })
+      });
+
+      if (res.ok) {
+        alert("✅ Admin added");
+        loadAdmins();
+      } else {
+        alert("❌ Failed");
+      }
+    }
+
+    async function loadAdmins() {
+      const res = await fetch(`${API}/admins`);
+      const admins = await res.json();
+      const list = document.getElementById("adminList");
+      list.innerHTML = "";
+
+      admins.forEach(adm => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <b>ID:</b> ${adm.telegram_id}<br>
+          <button onclick="editAdmin(${adm.telegram_id})">✏️ Edit</button>
+          <button onclick="deleteAdmin(${adm.telegram_id})">🗑️ Delete</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function editAdmin(oldId) {
+      const newId = prompt("New Telegram ID:", oldId);
+      if (!newId || newId == oldId) return;
+
+      fetch(`${API}/admins/${oldId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_id: parseInt(newId) })
+      }).then(res => {
+        res.ok ? (alert("✅ Updated"), loadAdmins()) : alert("❌ Failed");
+      });
+    }
+
+    function deleteAdmin(id) {
+      if (!confirm("Remove this admin?")) return;
+
+      fetch(`${API}/admins/${id}`, {
+        method: "DELETE"
+      }).then(res => {
+        res.ok ? (alert("✅ Removed"), loadAdmins()) : alert("❌ Failed");
+      });
+    }
+
+    // Run on load
+    fetchCategories();
+    loadProducts();
+    loadCategories();
+    loadAdmins();
+  </script>
+</body>
+</html>
