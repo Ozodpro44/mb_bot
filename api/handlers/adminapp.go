@@ -60,7 +60,7 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 			Name_en:    p.Name_en,
 			Name_tr:    p.Name_tr,
 			Price:      p.Price,
-			Photo:      p.Photo,
+			Photo:      "https://mbbot-production.up.railway.app/photos/" + p.Photo,
 			CategoryID: p.Category_id,
 		})
 	}

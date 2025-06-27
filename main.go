@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+
 	// "net/http"
 	"os"
 	"time"
@@ -10,10 +12,9 @@ import (
 	"bot/api"
 	postgres "bot/storage/sql"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"gopkg.in/telebot.v3"
-	"github.com/gorilla/mux"
-
 )
 
 const (
@@ -57,6 +58,8 @@ func main() {
 		R:       r,
 	})
 
+	fs := http.FileServer(http.Dir("./photos"))
+	http.Handle("/photos/", http.StripPrefix("/photos/", fs))
 
 	// Products
 
