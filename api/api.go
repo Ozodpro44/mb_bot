@@ -204,7 +204,7 @@ func Api(o *Options) {
 
 	go bot.Start()
 
-	// o.R.HandleFunc("/api/products", GetProducts).Methods("GET")
+	o.R.HandleFunc("/api/products", h.GetProducts).Methods("GET")
 	o.R.HandleFunc("/api/products", h.AddProductSite2).Methods("POST")
 	// o.R.HandleFunc("/api/products/{id}", UpdateProduct).Methods("PUT")
 	// o.R.HandleFunc("/api/products/{id}", DeleteProduct).Methods("DELETE")
