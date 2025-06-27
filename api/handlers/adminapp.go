@@ -48,7 +48,7 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 			CategoryID: p.Category_id,
 		})
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
 }
 
