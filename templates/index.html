@@ -115,24 +115,55 @@
       });
     }
 
-    async function loadProducts() {
-      const res = await fetch(`${API}/products`);
-      const products = await res.json();
-      const list = document.getElementById("productList");
-      list.innerHTML = "";
+    // async function loadProducts() {
+    //   const res = await fetch(`${API}/get-products`);
+    //   const products = await res.json();
+    //   const list = document.getElementById("productList");
+    //   list.innerHTML = "";
 
-      products.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `
-          <b>${p.name}</b> — ${p.price} so'm<br>
-          <img src="${p.photo}" alt="${p.name}"><br>
-          <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, '${p.photo}', ${p.category_id})">✏️ Edit</button>
-          <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
-        `;
-        list.appendChild(div);
-      });
+    //   products.forEach(p => {
+    //     const div = document.createElement("div");
+    //     div.className = "item";
+    //     div.innerHTML = `
+    //       <b>${p.name}</b> — ${p.price} so'm<br>
+    //       <img src="${p.photo}" alt="${p.name}"><br>
+    //       <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, '${p.photo}', ${p.category_id})">✏️ Edit</button>
+    //       <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+    //     `;
+    //     list.appendChild(div);
+    //   });
+    // }
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API}/get-products`);
+    
+        // 🔍 Проверим, успешный ли ответ
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+
+        const products = await res.json();
+        const list = document.getElementById("productList");
+        list.innerHTML = "";
+
+        products.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `
+            <b>${p.name}</b> — ${p.price} so'm<br>
+            <img src="${p.photo}" alt="${p.name}"><br>
+            <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, '${p.photo}', ${p.category_id})">✏️ Edit</button>
+            <button onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+          `;
+          list.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error("❌ Error loading products:", err.message);
+        alert("❌ Failed to load products: " + err.message);
+      }
     }
+
 
     async function addProduct() {
       const name = document.getElementById("pname").value;
