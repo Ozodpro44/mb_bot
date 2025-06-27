@@ -71,8 +71,8 @@ type Categories struct {
 }
 
 type Category struct {
-	ID         string
-	Name_uz    string
+	ID         string	`json:"id"`
+	Name_uz    string	`json:"name"`
 	Name_ru    string
 	Name_en    string
 	Name_tr    string

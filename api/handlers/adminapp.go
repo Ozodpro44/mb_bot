@@ -74,3 +74,35 @@ func (h *handlers) AddProductSite(w http.ResponseWriter, r *http.Request) {
 // 		http.Error(w, err.Error(), 500)
 // 	}
 // }
+
+func (h *handlers) GetCategories(w http.ResponseWriter, r *http.Request) {
+	// rows, err := h.db.Query("SELECT id, name FROM categories")
+	// if err != nil {
+	// 	http.Error(w, err.Error(), 500)
+	// 	return
+	// }
+	// defer rows.Close()
+	cat, err := h.storage.GetAllCategories()
+
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var categories []struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	for _, c := range cat.Categories {
+		categories = append(categories, struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		}{
+			ID:   c.ID,
+			Name: c.Name_uz,
+		})
+	}
+
+	json.NewEncoder(w).Encode(categories)
+
+}
