@@ -191,7 +191,7 @@ func (h *handlers) GetCategories(w http.ResponseWriter, r *http.Request) {
 
 func (h *handlers) CheckAdmin(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		TelegramID int64 `json:"telegram_id"`
+		TelegramID int64 `json:"user_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

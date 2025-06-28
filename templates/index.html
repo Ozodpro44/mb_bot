@@ -74,7 +74,7 @@
     justify-content: center;
     z-index: 9999;
     ">
-    <img src="https://i.gifer.com/ZWdx.gif" alt="Loading..." style="width: 100px; height: 100px;">
+    <img src="https://i.gifer.com/ZWdx.gif" alt="Loading..." style="width: 100%; height: 25%;">
   </div>
   <div id="admin-panel" style="display:none;">
     <h2>⚙️ Admin Panel</h2>
@@ -126,7 +126,7 @@
     // const userId = tg.initDataUnsafe.user.id;
     let userId;
     try {
-      userId = tg?.initDataUnsafe?.user?.id;
+      userId = tg.initDataUnsafe.user.id;
       if (!userId) throw new Error("User not available from Telegram Web App")
     } catch (e) {
       alert("❌ Failed to get Telegram user. Please open the bot via Telegram Web App")
