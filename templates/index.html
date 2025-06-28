@@ -220,6 +220,7 @@
 
     function showUserPanel() {
         loadUserProducts();
+        tg.ready();
         document.getElementById("admin-panel").style.display = "none";
         document.getElementById("user-panel").style.display = "block";
     }
@@ -295,7 +296,7 @@
             <b>${p.name_tr}</br>
             <img src="${p.photo}" alt="${p.name_uz}"><br>
             <button onclick="editProduct(${JSON.stringify(p.id)}, '${p.name_uz}','${p.name_ru}','${p.name_en}','${p.name_tr}', ${p.price}, '${p.photo}', ${JSON.stringify(p.category_id)})">✏️ Edit</button>
-            <button onclick="deleteProduct(${JSON.stringify(p.id)})">🗑️ Delete</button>
+            <button onclick="deleteProduct('${p.id}')">🗑️ Delete</button>
           `;
           list.appendChild(div);
         });
@@ -548,7 +549,7 @@
 
     // Run on load
     window.addEventListener("DOMContentLoaded", loadUserProducts)
-    tg.ready();
+    
   </script>
 </body>
 </html>

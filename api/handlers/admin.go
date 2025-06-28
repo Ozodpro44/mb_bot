@@ -1509,7 +1509,15 @@ func (h *handlers) GetProductInfo(c telebot.Context) error {
 		markup.Row(btnBack),
 	)
 	message := fmt.Sprintf("* %s/ %s/ %s/ %s* \n\n", cat.Name_uz, cat.Name_ru, cat.Name_en, cat.Name_tr) + helpers.EscapeMarkdownV2(fmt.Sprintf(AdminMessages[lang]["product_info"], prod.Name_uz, prod.Name_ru, prod.Name_en, prod.Name_tr, prod.Description, prod.Price, prod.Abelety))
-	photo := &telebot.Photo{File: telebot.FromDisk(prod.Photo), Caption: message}
+	photo := &telebot.Photo{File: telebot.FromDisk(
+		func() string{
+			if _, err := os.Stat("./photos/" + prod.Photo); os.IsNotExist(err) {
+			photoPath := "./photos/no_photo.jpg"
+			return photoPath
+			}
+			return "./photos/" + prod.Photo
+		}(),
+	), Caption: message}
 
 	option := &telebot.SendOptions{
 		ParseMode:   telebot.ModeMarkdownV2,
