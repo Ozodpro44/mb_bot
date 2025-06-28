@@ -221,3 +221,15 @@ func (h *handlers) CheckAdmin(w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(map[string]bool{"is_admin": })
 }
+
+func (h *handlers) DeleteProductSite(w http.ResponseWriter, r *http.Request) {
+	productID := r.URL.Path[len("/api/delete-products/"):]
+	err := h.storage.DeleteProductById(productID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Product deleted successfully"})
+}
+

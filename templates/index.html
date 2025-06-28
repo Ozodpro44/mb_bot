@@ -130,17 +130,19 @@
     <h2>⚙️ Admin Panel</h2>
 
     <div class="section">
-      <h3>Add Product</h3>
-      <input id="pname_uz" placeholder="Product name uz">
-      <input id="pname_ru" placeholder="Product name ru">
-      <input id="pname_en" placeholder="Product name en">
-      <input id="pname_tr" placeholder="Product name tr">
-      <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
-      <input id="pphoto" type="file" accept="image/*">
-      <select id="pcategory" >
-        <option value="">Select category</option>
-      </select>
-      <button onclick="addProduct()">➕ Add Product</button>
+      <form id:="addProductForm" onsmit="addProduct(); return false;">
+        <h3>Add Product</h3>
+        <input id="pname_uz" placeholder="Product name uz">
+        <input id="pname_ru" placeholder="Product name ru">
+        <input id="pname_en" placeholder="Product name en">
+        <input id="pname_tr" placeholder="Product name tr">
+        <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
+        <input id="pphoto" type="file" accept="image/*">
+        <select id="pcategory" >
+          <option value="">Select category</option>
+        </select>
+        <button onclick="addProduct()">➕ Add Product</button>
+      </form>
     </div>
 
     <div class="section">
@@ -238,6 +240,10 @@
       const categories = await res.json();
       const select = document.getElementById("pcategory");
       select.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Select category";
+      select.appendChild(opt);
       categories.forEach(cat => {
         const opt = document.createElement("option");
         opt.value = cat.id;
@@ -310,6 +316,8 @@
       const categoryId = document.getElementById("pcategory").value;
       const photoInput = document.getElementById("pphoto");
       const photoFile = photoInput.files[0];
+      compressed = await compressImage(photoFile);
+      // formData.append("photo", compressed);
 
       if (!name_uz || !name_ru || !name_en || !name_tr || !price || !categoryId || !photoFile) {
         alert("⚠️ Please fill all fields and upload a photo.");
@@ -323,7 +331,7 @@
       formData.append("name_tr", name_tr);
       formData.append("price", price);
       formData.append("category_id", categoryId);
-      formData.append("photo", photoFile);
+      formData.append("photo", compressed);
 
       const res = await fetch(`${API}/products`, {
         method: "POST",
@@ -333,6 +341,7 @@
       if (res.ok) {
         alert("✅ Product added");
         loadProducts();
+        document.getElementById("addProductForm").reset();
       } else {
         alert("❌ Failed to add product");
       }
@@ -393,7 +402,7 @@
 
     async function deleteProduct(id) {
       if (!confirm("Delete this product?")) return;
-      const res = await fetch(`${API}/products/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/delete-products/${id}`, { method: "DELETE" });
       res.ok ? (alert("✅ Deleted"), loadProducts()) : alert("❌ Failed");
     }
 

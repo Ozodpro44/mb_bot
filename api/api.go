@@ -207,7 +207,7 @@ func Api(o *Options) {
 	o.R.HandleFunc("/api/get-products", h.GetProducts).Methods("GET")
 	o.R.HandleFunc("/api/products", h.AddProductSite2).Methods("POST")
 	// o.R.HandleFunc("/api/products/{id}", UpdateProduct).Methods("PUT")
-	// o.R.HandleFunc("/api/products/{id}", DeleteProduct).Methods("DELETE")
+	o.R.HandleFunc("/api/delete-products/{id}", h.DeleteProductSite).Methods("DELETE")
 
 	// Categories
 	o.R.HandleFunc("/api/categories", h.GetCategories).Methods("GET")
