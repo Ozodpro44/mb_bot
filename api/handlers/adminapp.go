@@ -103,15 +103,15 @@ func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.storage.CreateProduct(&models.Product{
+	prod, _ := h.storage.CreateProduct(&models.Product{
 		Name_uz:     name_uz,
 		Name_ru:     name_ru,
 		Name_en:     name_en,
 		Name_tr:     name_tr,
 		Price:       price,
 		Photo:       handler.Filename,
-		Category_id: categoryID,
 	})
+	h.storage.AddProductToCategory(prod.ID, categoryID)
 
 	w.WriteHeader(http.StatusCreated)
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
@@ -137,7 +137,9 @@
       <input id="pname_tr" placeholder="Product name tr">
       <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
       <input id="pphoto" type="file" accept="image/*">
-      <select id="pcategory" ></select>
+      <select id="pcategory" >
+        <option value="">Select category</option>
+      </select>
       <button onclick="addProduct()">➕ Add Product</button>
     </div>
 
