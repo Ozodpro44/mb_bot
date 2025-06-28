@@ -198,7 +198,11 @@ func (h *handlers) CheckAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(req.TelegramID)
+
 	isAdmin := h.storage.CheckAdmin(req.TelegramID)
+
+	fmt.Println(isAdmin)
 
 	if isAdmin {
 		w.Header().Set("Content-Type", "application/json")
