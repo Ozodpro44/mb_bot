@@ -233,3 +233,65 @@ func (h *handlers) DeleteProductSite(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Product deleted successfully"})
 }
 
+func (h *handlers) UpdateProductSite(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20) // 10MB
+	if err != nil {
+		http.Error(w, "Can't parse form", http.StatusBadRequest)
+		return
+	}
+
+	productID := r.URL.Path[len("/api/update-products/"):]
+
+	name_uz := r.FormValue("name_uz")
+	name_ru := r.FormValue("name_ru")
+	name_en := r.FormValue("name_en")
+	name_tr := r.FormValue("name_tr")
+	priceStr := r.FormValue("price")
+	categoryID := r.FormValue("category_id")
+	price, _ := strconv.Atoi(priceStr)
+
+	// Check if a new photo is uploaded
+	file, handler, err := r.FormFile("photo")
+	var photoPath string
+	if err == nil { // Photo is uploaded
+		defer file.Close()
+		dst, err := os.Create("./photos/" + handler.Filename)
+		if err != nil {
+			http.Error(w, "Can't save file", http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			http.Error(w, "Can't save file", http.StatusInternalServerError)
+			return
+		}
+		photoPath = handler.Filename
+	} else if err == http.ErrMissingFile { // No new photo, keep existing
+		prod, err := h.storage.GetProductByIdForAdmin(productID)
+		if err != nil {
+			http.Error(w, "Product not found", http.StatusNotFound)
+			return
+		}
+		photoPath = prod.Photo
+	} else { // Other error
+		http.Error(w, "Error processing photo", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.storage.UpdateProduct(productID, &models.Product{
+		Name_uz:     name_uz,
+		Name_ru:     name_ru,
+		Name_en:     name_en,
+		Name_tr:     name_tr,
+		Price:       price,
+		Photo:       photoPath,
+		Category_id: categoryID,
+	})
+	if err != nil {
+		http.Error(w, "DB error", 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}

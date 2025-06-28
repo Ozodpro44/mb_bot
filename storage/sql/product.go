@@ -255,3 +255,22 @@ func (s *Storage) UpdateProductPhotoById(product_id string, photo string) error 
 	}
 	return nil
 }
+
+func (s *Storage) UpdateProduct(product_id string, product *models.Product) error {
+	_, err := s.db.Exec(`
+        UPDATE products 
+        SET name_uz = $1, name_ru = $2, name_en = $3, name_tr = $4, price = $5, photo = $6, categories_id = $7
+        WHERE id = $8`,
+		product.Name_uz,
+		product.Name_ru,
+		product.Name_en,
+		product.Name_tr,
+		product.Price,
+		product.Photo,
+		product.Category_id,
+		product_id)
+	if err != nil {
+		return fmt.Errorf("failed to update product: %v", err)
+	}
+	return nil
+}

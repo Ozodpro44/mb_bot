@@ -79,6 +79,7 @@ type Storage interface {
 	UpdateProductNameTr(product_id string, name_tr string) error
 	UpdateProductCategoryById(product_id string, category_id string) error
 	UpdateProductPhotoById(product_id string, photo string) error
+	UpdateProduct(product_id string, product *models.Product) error
 	// // Admin
 	CheckAdmin(telegramID int64) bool
 	CreateAdmin(admin *models.Admin) (*models.Admin, error)
