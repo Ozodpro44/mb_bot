@@ -65,37 +65,43 @@
   </style>
 </head>
 <body>
-  <h2>⚙️ Admin Panel</h2>
+  <div id="admin-panel" style="display:none;">
+    <h2>⚙️ Admin Panel</h2>
 
-  <div class="section">
-    <h3>Add Product</h3>
-    <input id="pname_uz" placeholder="Product name uz">
-    <input id="pname_ru" placeholder="Product name ru">
-    <input id="pname_en" placeholder="Product name en">
-    <input id="pname_tr" placeholder="Product name tr">
-    <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
-    <input id="pphoto" type="file" accept="image/*">
-    <select id="pcategory"></select>
-    <button onclick="addProduct()">➕ Add Product</button>
+    <div class="section">
+      <h3>Add Product</h3>
+      <input id="pname_uz" placeholder="Product name uz">
+      <input id="pname_ru" placeholder="Product name ru">
+      <input id="pname_en" placeholder="Product name en">
+      <input id="pname_tr" placeholder="Product name tr">
+      <input id="pprice" type="number" placeholder="Price (e.g. 15000)">
+      <input id="pphoto" type="file" accept="image/*">
+      <select id="pcategory" ></select>
+      <button onclick="addProduct()">➕ Add Product</button>
+    </div>
+
+    <div class="section">
+      <h3>All Products</h3>
+      <div id="productList">Loading...</div>
+    </div>
+
+    <div class="section">
+      <h3>Categories</h3>
+      <input id="catName" placeholder="New Category Name">
+      <button onclick="addCategory()">➕ Add Category</button>
+      <div id="categoryList">Loading...</div>
+    </div>
+
+    <div class="section">
+      <h3>Admins</h3>
+      <input id="adminId" placeholder="Telegram ID (int64)">
+      <button onclick="addAdmin()">➕ Add Admin</button>
+      <div id="adminList">Loading...</div>
+    </div>
   </div>
 
-  <div class="section">
-    <h3>All Products</h3>
-    <div id="productList">Loading...</div>
-  </div>
-
-  <div class="section">
-    <h3>Categories</h3>
-    <input id="catName" placeholder="New Category Name">
-    <button onclick="addCategory()">➕ Add Category</button>
-    <div id="categoryList">Loading...</div>
-  </div>
-
-  <div class="section">
-    <h3>Admins</h3>
-    <input id="adminId" placeholder="Telegram ID (int64)">
-    <button onclick="addAdmin()">➕ Add Admin</button>
-    <div id="adminList">Loading...</div>
+  <div id="user-panel" style="display:none">
+    <h2>👤 User Panel</h2>
   </div>
 
   <script>
@@ -104,6 +110,51 @@
 
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.ready();
+
+    const userId = tg.initDataUnsafe.user.id;
+
+    fetch("https://mbbot-production.up.railway.app/api/check-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.role === "admin") {
+        showAdminPanel();  // твоя функция
+        } else {
+        showUserPanel();   // твоя функция
+        }
+    })
+    .catch(err => {
+        console.error("Ошибка при получении роли:", err);
+    });
+
+    function showAdminPanel() {
+        fetchCategories();
+        loadProducts();
+        loadCategories();
+        loadAdmins();
+        document.getElementById("admin-panel").style.display = "block";
+        document.getElementById("user-panel").style.display = "block";
+    }
+
+    function showUserPanel() {
+        document.getElementById("admin-panel").style.display = "block";
+        document.getElementById("user-panel").style.display = "block";
+    }
+
+    // async function checkAdmin() {
+    //   const userTelegramId = tg.initDataUnsafe.user.id;
+    //   const res = await fetch(`${API}/admins/${userTelegramId}`);
+      
+    //   if (res.ok) {
+    //     document.getElementById("adminPanel").style.display = "block";
+    //   } else {
+    //     document.getElementById("userPanel").style.display = "block";
+    //   }
+    // }
 
     async function fetchCategories() {
       const res = await fetch(`${API}/categories`);
@@ -179,7 +230,7 @@
       const name_en = document.getElementById("pname_en").value;
       const name_tr = document.getElementById("pname_tr").value;
       const price = parseInt(document.getElementById("pprice").value);
-      const categoryId = parseInt(document.getElementById("pcategory").value);
+      const categoryId = document.getElementById("pcategory").value;
       const photoInput = document.getElementById("pphoto");
       const photoFile = photoInput.files[0];
 
@@ -187,7 +238,7 @@
         alert("⚠️ Please fill all fields and upload a photo.");
         return;
       }
-      const form = e.t
+
       const formData = new FormData();
       formData.append("name_uz", name_uz);
       formData.append("name_ru", name_ru);
@@ -361,10 +412,7 @@
     }
 
     // Run on load
-    fetchCategories();
-    loadProducts();
-    loadCategories();
-    loadAdmins();
+    
   </script>
 </body>
 </html>

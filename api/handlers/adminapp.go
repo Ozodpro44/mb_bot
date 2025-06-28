@@ -188,3 +188,28 @@ func (h *handlers) GetCategories(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(categories)
 }
+
+func (h *handlers) CheckAdmin(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		TelegramID int64 `json:"telegram_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	isAdmin := h.storage.CheckAdmin(req.TelegramID)
+
+	if isAdmin {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"role": "admin"})
+		return
+	}else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"role": "user"})
+		return
+	}
+
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(map[string]bool{"is_admin": })
+}
