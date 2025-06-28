@@ -24,7 +24,7 @@ type Product struct {
 }
 
 func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
-	prod, err := h.storage.GetAllProducts()
+	prod, err := h.storage.GetProductsForAdmin()
 
 	if err != nil {
 		http.Error(w, err.Error(), 500)
