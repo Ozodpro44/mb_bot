@@ -216,7 +216,6 @@
 
     function showUserPanel() {
         loadUserProducts();
-        window.addEventListener("DOMContentLoaded", loadUserProducts)
         document.getElementById("admin-panel").style.display = "none";
         document.getElementById("user-panel").style.display = "block";
     }
@@ -510,7 +509,8 @@
     }
 
     // Run on load
-     tg.ready();
+    window.addEventListener("DOMContentLoaded", loadUserProducts)
+    tg.ready();
   </script>
 </body>
 </html>
