@@ -223,8 +223,10 @@ func Api(o *Options) {
 	// o.R.HandleFunc("/api/admins/{id}", UpdateAdmin).Methods("PUT")
 	// o.R.HandleFunc("/api/admins/{id}", DeleteAdmin).Methods("DELETE")
 
-	o.R.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
+	// o.R.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
 
+	fs := http.FileServer(http.Dir("./photos"))
+	http.Handle("/photos/", http.StripPrefix("/photos/", fs))
 
 	http.ListenAndServe(":8080", enableCORS(o.R))
 }
