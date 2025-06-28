@@ -863,7 +863,7 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 
 // Function to display product menu with quantity options
 func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, quantity int) error {
-	photoPath := product.Photo
+	photoPath := fmt.Sprintf("./photos/%s",product.Photo)
 	if _, err := os.Stat(photoPath); os.IsNotExist(err) {
 		photoPath = "./photos/no_photo.jpg"
 	}
