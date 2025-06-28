@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	// "bot/lib/helpers"
 	"bot/models"
 	"encoding/json"
 	"fmt"
@@ -44,6 +45,9 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 		CategoryID string `json:"category_id"`
 	}
 	for _, p := range prod.Products {
+		if _, err := os.Stat("./photos/"+p.Photo); os.IsNotExist(err) {
+			p.Photo = "no_photo.jpg"
+		}
 		products = append(products, struct {
 			ID         string `json:"id"`
 			Name_uz    string `json:"name_uz"`
@@ -104,12 +108,12 @@ func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prod, _ := h.storage.CreateProduct(&models.Product{
-		Name_uz:     name_uz,
-		Name_ru:     name_ru,
-		Name_en:     name_en,
-		Name_tr:     name_tr,
-		Price:       price,
-		Photo:       handler.Filename,
+		Name_uz: name_uz,
+		Name_ru: name_ru,
+		Name_en: name_en,
+		Name_tr: name_tr,
+		Price:   price,
+		Photo:   handler.Filename,
 	})
 	h.storage.AddProductToCategory(prod.ID, categoryID)
 
@@ -208,7 +212,7 @@ func (h *handlers) CheckAdmin(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"role": "admin"})
 		return
-	}else {
+	} else {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"role": "user"})
 		return
