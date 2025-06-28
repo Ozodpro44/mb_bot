@@ -216,7 +216,7 @@ func Api(o *Options) {
 	// o.R.HandleFunc("/api/categories/{id}", DeleteCategory).Methods("DELETE")
 
 	// Admins
-	o.R.HandleFunc("/api/check-admin", h.CheckAdmin).Methods("POST")
+	o.R.HandleFunc("/api/check-role", h.CheckAdmin).Methods("POST")
 	// o.R.HandleFunc("/api/admins", GetAdmins).Methods("GET")
 	// o.R.HandleFunc("/api/admins", GetAdmins).Methods("GET")
 	// o.R.HandleFunc("/api/admins", h.AddAdmin).Methods("POST")
