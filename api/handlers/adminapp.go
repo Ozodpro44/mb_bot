@@ -13,14 +13,25 @@ import (
 )
 
 type Product struct {
-	ID         string `json:"id"`
-	Name_uz    string `json:"name_uz"`
-	Name_ru    string `json:"name_ru"`
-	Name_en    string `json:"name_en"`
-	Name_tr    string `json:"name_tr"`
-	Price      int    `json:"price"`
-	Photo      string `json:"photo"`
-	CategoryID string `json:"category_id"`
+	ID          string `json:"id"`
+	Name        Name	`json:"name"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
+	Photo       string `json:"photo"`
+	Abelety     bool   `json:"stock"`
+	CategoryID  string `json:"category_id"`
+}
+
+type Name struct {
+	Uz string `json:"uz"`
+	Ru string `json:"ru"`
+	En string `json:"en"`
+	Tr string `json:"tr"`
+}
+
+type Category struct {
+	ID   string `json:"id"`
+	Name Name   `json:"name"`
 }
 
 func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
@@ -34,38 +45,24 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var products []struct {
-		ID         string `json:"id"`
-		Name_uz    string `json:"name_uz"`
-		Name_ru    string `json:"name_ru"`
-		Name_en    string `json:"name_en"`
-		Name_tr    string `json:"name_tr"`
-		Price      int    `json:"price"`
-		Photo      string `json:"photo"`
-		CategoryID string `json:"category_id"`
-	}
+	var products []Product
 	for _, p := range prod.Products {
-		if _, err := os.Stat("./photos/"+p.Photo); os.IsNotExist(err) {
+		if _, err := os.Stat("./photos/" + p.Photo); os.IsNotExist(err) {
 			p.Photo = "no_photo.jpg"
 		}
-		products = append(products, struct {
-			ID         string `json:"id"`
-			Name_uz    string `json:"name_uz"`
-			Name_ru    string `json:"name_ru"`
-			Name_en    string `json:"name_en"`
-			Name_tr    string `json:"name_tr"`
-			Price      int    `json:"price"`
-			Photo      string `json:"photo"`
-			CategoryID string `json:"category_id"`
-		}{
-			ID:         p.ID,
-			Name_uz:    p.Name_uz,
-			Name_ru:    p.Name_ru,
-			Name_en:    p.Name_en,
-			Name_tr:    p.Name_tr,
-			Price:      p.Price,
-			Photo:      "https://mbbot-production.up.railway.app/photos/" + p.Photo,
-			CategoryID: p.Category_id,
+		products = append(products, Product{
+			ID: p.ID,
+			Name: Name{
+				Uz: p.Name_uz,
+				Ru: p.Name_ru,
+				En: p.Name_en,
+				Tr: p.Name_tr,
+			},
+			Description: p.Description,
+			Price:       p.Price,
+			Photo:       "https://mbbot-production.up.railway.app/photos/" + p.Photo,
+			Abelety:     p.Abelety,
+			CategoryID:  p.Category_id,
 		})
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -176,17 +173,16 @@ func (h *handlers) GetCategories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var categories []struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	}
+	var categories []Category
 	for _, c := range cat.Categories {
-		categories = append(categories, struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		}{
-			ID:   c.ID,
-			Name: c.Name_uz,
+		categories = append(categories, Category{
+			ID: c.ID,
+			Name: Name{
+				Uz: c.Name_uz,
+				Ru: c.Name_ru,
+				En: c.Name_en,
+				Tr: c.Name_tr,
+			},
 		})
 	}
 
