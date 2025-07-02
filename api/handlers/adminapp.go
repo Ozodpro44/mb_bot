@@ -69,6 +69,38 @@ func (h *handlers) GetProducts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
+func (h *handlers) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
+	categoryID := r.URL.Path[len("/api/products-by-category/"):]
+	prod, err := h.storage.GetProductsByCategoryForAdmin(categoryID)
+
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	var products []Product
+	for _, p := range prod.Products {
+		if _, err := os.Stat("./photos/" + p.Photo); os.IsNotExist(err) {
+			p.Photo = "no_photo.jpg"
+		}
+		products = append(products, Product{
+			ID: p.ID,
+			Name: Name{
+				Uz: p.Name_uz,
+				Ru: p.Name_ru,
+				En: p.Name_en,
+				Tr: p.Name_tr,
+			},
+			Description: p.Description,
+			Price:       p.Price,
+			Photo:       "https://mbbot-production.up.railway.app/photos/" + p.Photo,
+			Abelety:     p.Abelety,
+			CategoryID:  p.Category_id,
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
+}
+
 func (h *handlers) AddProductSite2(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20) // 10MB
 	if err != nil {
