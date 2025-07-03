@@ -126,7 +126,7 @@ func (s *Storage) GetProductByName(product_name string) (*models.Product, error)
 }
 
 func (s *Storage) GetProductsForAdmin() (*models.Products, error) {
-	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description, categories_id FROM products ORDER BY name_uz ASC")
+	rows, err := s.db.Query("SELECT id, name_uz, name_ru, name_en, name_tr, price, photo, description, is_active, categories_id FROM products ORDER BY name_uz ASC")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch products: %v", err)
 	}
@@ -134,7 +134,7 @@ func (s *Storage) GetProductsForAdmin() (*models.Products, error) {
 	var products models.Products
 	for rows.Next() {
 		product := models.Product{}
-		if err := rows.Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description, &product.Category_id); err != nil {
+		if err := rows.Scan(&product.ID, &product.Name_uz, &product.Name_ru, &product.Name_en, &product.Name_tr, &product.Price, &product.Photo, &product.Description, &product.Abelety, &product.Category_id); err != nil {
 			return nil, fmt.Errorf("failed to scan product: %v", err)
 		}
 		products.Products = append(products.Products, &product)
