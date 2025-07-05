@@ -81,6 +81,7 @@ type Storage interface {
 	UpdateProductPhotoById(product_id string, photo string) error
 	UpdateProduct(product_id string, product *models.Product) error
 	// // Admin
+	GetDashboard() (*models.Dashboard, error)
 	CheckAdmin(telegramID int64) bool
 	CreateAdmin(admin *models.Admin) (*models.Admin, error)
 	UpdateAdmin(admin *models.Admin) (*models.Admin, error)

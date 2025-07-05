@@ -219,6 +219,7 @@ func Api(o *Options) {
 
 	// Admins
 	o.R.HandleFunc("/api/check-role", h.CheckAdmin).Methods("POST")
+	o.R.HandleFunc("/api/dashboard", h.Dashboard).Methods("GET")
 	// o.R.HandleFunc("/api/admins", GetAdmins).Methods("GET")
 	// o.R.HandleFunc("/api/admins", GetAdmins).Methods("GET")
 	// o.R.HandleFunc("/api/admins", h.AddAdmin).Methods("POST")

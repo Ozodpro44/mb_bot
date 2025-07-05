@@ -197,3 +197,70 @@ type GetOrderMsg struct {
 	UserID int64
 	Lang   string
 }
+
+type Dashboard struct {
+	TotalOrders         int                   `json:"totalOrders"`  // This Month
+	TotalRevenue        float64               `json:"totalRevenue"` // This Month
+	TotalUsers          int                   `json:"totalUsers"`
+	AvgOrderValue       float64               `json:"avgOrderValue"` // This Month
+	OrdersToday         int                   `json:"ordersToday"`
+	RevenueToday        float64               `json:"revenueToday"`
+	SatisfactionRate    float64               `json:"satisfactionRate"`
+	ActiveBranches      int                   `json:"activeBranches"`
+	TotalBranches       int                   `json:"totalBranches"`
+	Trends              Trends                `json:"trends"`
+	TopProducts         []TopProducts         `json:"topProducts"`
+	RecentOrders        []RecentOrders        `json:"recentOrders"`
+	CategoryPerformance []CategoryPerformance `json:"categoryPerformance"`
+	PeakHours           []PeakHours           `json:"peakHours"`
+	BranchPerformance   []BranchPerformance   `json:"branchPerformance"`
+	SalesOverview       SalesOverview         `json:"salesOverview"`
+}
+
+type Trends struct {
+	Orders  float64 `json:"orders"`
+	Revenue float64 `json:"revenue"`
+	Users   float64 `json:"users"`
+	Aov     float64 `json:"aov"`
+}
+
+type TopProducts struct {
+	Name    string  `json:"name"`
+	Sold    int     `json:"sold"`
+	Revenue float64 `json:"revenue"`
+	Change  float64 `json:"change"`
+}
+
+type RecentOrders struct {
+	OrderID  string  `json:"id"`
+	Customer string  `json:"customer"`
+	Total    float64 `json:"total"`
+	Status   string  `json:"status"`
+	Time     string  `json:"time"`
+}
+
+type CategoryPerformance struct {
+	Name       string  `json:"name"`
+	Revenue    float64 `json:"revenue"`
+	Percentage float64 `json:"percentage"`
+	Change     float64 `json:"change"`
+}
+
+type PeakHours struct {
+	Hour       string  `json:"hour"`
+	Orders     int     `json:"orders"`
+	Percentage float64 `json:"percentage"`
+}
+
+type BranchPerformance struct {
+	Name      string  `json:"name"`
+	Revenue   float64 `json:"revenue"`
+	Percetage float64 `json:"percetage"`
+	Status    string  `json:"status"`
+}
+
+type SalesOverview struct {
+	SevenDays  []int `json:"7d"`
+	ThirtyDays []int `json:"30d"`
+	NinetyDays []int `json:"90d"`
+}
