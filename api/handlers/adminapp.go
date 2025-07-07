@@ -108,86 +108,88 @@ func (h *handlers) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var topProducts []TopProducts
-	for _, p := range dashboard.TopProducts {
-		topProducts = append(topProducts, TopProducts{
-			Name:    p.Name,
-			Sold:    p.Sold,
-			Revenue: p.Revenue,
-			Change:  p.Change,
-		})
-	}
+	fmt.Println(dashboard)
 
-	var recentOrders []RecentOrders
-	for _, o := range dashboard.RecentOrders {
-		recentOrders = append(recentOrders, RecentOrders{
-			OrderID:  o.OrderID,
-			Customer: o.Customer,
-			Total:    o.Total,
-			Status:   o.Status,
-			Time:     o.Time,
-		})
-	}
+	// var topProducts []TopProducts
+	// for _, p := range dashboard.TopProducts {
+	// 	topProducts = append(topProducts, TopProducts{
+	// 		Name:    p.Name,
+	// 		Sold:    p.Sold,
+	// 		Revenue: p.Revenue,
+	// 		Change:  p.Change,
+	// 	})
+	// }
 
-	var categoryPerformance []CategoryPerformance
-	for _, c := range dashboard.CategoryPerformance {
-		categoryPerformance = append(categoryPerformance, CategoryPerformance{
-			Name:       c.Name,
-			Revenue:    c.Revenue,
-			Percentage: c.Percentage,
-			Change:     c.Change,
-		})
-	}
+	// var recentOrders []RecentOrders
+	// for _, o := range dashboard.RecentOrders {
+	// 	recentOrders = append(recentOrders, RecentOrders{
+	// 		OrderID:  o.OrderID,
+	// 		Customer: o.Customer,
+	// 		Total:    o.Total,
+	// 		Status:   o.Status,
+	// 		Time:     o.Time,
+	// 	})
+	// }
 
-	var peakHours []PeakHours
-	for _, p := range dashboard.PeakHours {
-		peakHours = append(peakHours, PeakHours{
-			Hour:       p.Hour,
-			Orders:     p.Orders,
-			Percentage: p.Percentage,
-		})
-	}
+	// var categoryPerformance []CategoryPerformance
+	// for _, c := range dashboard.CategoryPerformance {
+	// 	categoryPerformance = append(categoryPerformance, CategoryPerformance{
+	// 		Name:       c.Name,
+	// 		Revenue:    c.Revenue,
+	// 		Percentage: c.Percentage,
+	// 		Change:     c.Change,
+	// 	})
+	// }
 
-	var branchPerformance []BranchPerformance
-	for _, b := range dashboard.BranchPerformance {
-		branchPerformance = append(branchPerformance, BranchPerformance{
-			Name:      b.Name,
-			Revenue:   b.Revenue,
-			Percetage: b.Percetage,
-			Status:    b.Status,
-		})
-	}
+	// var peakHours []PeakHours
+	// for _, p := range dashboard.PeakHours {
+	// 	peakHours = append(peakHours, PeakHours{
+	// 		Hour:       p.Hour,
+	// 		Orders:     p.Orders,
+	// 		Percentage: p.Percentage,
+	// 	})
+	// }
 
-	response := Dashboard{
-		TotalOrders:    dashboard.TotalOrders,
-		TotalRevenue:   dashboard.TotalRevenue,
-		TotalUsers:     dashboard.TotalUsers,
-		AvgOrderValue:  dashboard.AvgOrderValue,
-		OrdersToday:    dashboard.OrdersToday,
-		RevenueToday:   dashboard.RevenueToday,
-		SatisfactionRate: dashboard.SatisfactionRate,
-		ActiveBranches: dashboard.ActiveBranches,		
-		TotalBranches:  dashboard.TotalBranches,
-		Trends: Trends{
-			Orders:  dashboard.Trends.Orders,
-			Revenue: dashboard.Trends.Revenue,
-			Users:   dashboard.Trends.Users,
-			Aov:     dashboard.Trends.Aov,
-		},
-		TopProducts:         topProducts,
-		RecentOrders:        recentOrders,
-		CategoryPerformance: categoryPerformance,
-		PeakHours:           peakHours,
-		BranchPerformance:   branchPerformance,
-		SalesOverview: SalesOverview{
-			SevenDays:  dashboard.SalesOverview.SevenDays,
-			ThirtyDays: dashboard.SalesOverview.ThirtyDays,
-			NinetyDays: dashboard.SalesOverview.NinetyDays,
-		},
-	}
+	// var branchPerformance []BranchPerformance
+	// for _, b := range dashboard.BranchPerformance {
+	// 	branchPerformance = append(branchPerformance, BranchPerformance{
+	// 		Name:      b.Name,
+	// 		Revenue:   b.Revenue,
+	// 		Percetage: b.Percetage,
+	// 		Status:    b.Status,
+	// 	})
+	// }
+
+	// response := Dashboard{
+	// 	TotalOrders:    dashboard.TotalOrders,
+	// 	TotalRevenue:   dashboard.TotalRevenue,
+	// 	TotalUsers:     dashboard.TotalUsers,
+	// 	AvgOrderValue:  dashboard.AvgOrderValue,
+	// 	OrdersToday:    dashboard.OrdersToday,
+	// 	RevenueToday:   dashboard.RevenueToday,
+	// 	SatisfactionRate: dashboard.SatisfactionRate,
+	// 	ActiveBranches: dashboard.ActiveBranches,		
+	// 	TotalBranches:  dashboard.TotalBranches,
+	// 	Trends: Trends{
+	// 		Orders:  dashboard.Trends.Orders,
+	// 		Revenue: dashboard.Trends.Revenue,
+	// 		Users:   dashboard.Trends.Users,
+	// 		Aov:     dashboard.Trends.Aov,
+	// 	},
+	// 	TopProducts:         topProducts,
+	// 	RecentOrders:        recentOrders,
+	// 	CategoryPerformance: categoryPerformance,
+	// 	PeakHours:           peakHours,
+	// 	BranchPerformance:   branchPerformance,
+	// 	SalesOverview: SalesOverview{
+	// 		SevenDays:  dashboard.SalesOverview.SevenDays,
+	// 		ThirtyDays: dashboard.SalesOverview.ThirtyDays,
+	// 		NinetyDays: dashboard.SalesOverview.NinetyDays,
+	// 	},
+	// }
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(dashboard)
 
 }
 
