@@ -15,7 +15,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// TotalOrders (This Month)
 	err := s.db.QueryRow(`
-		SELECT COUNT(order_id) FROM orders 
+		SELECT COUNT(id) FROM orders 
 		WHERE created_at >= date_trunc('month', current_date);
 	`).Scan(&dashboard.TotalOrders)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// OrdersToday
 	err = s.db.QueryRow(`
-		SELECT COUNT(order_id) FROM orders 
+		SELECT COUNT(id) FROM orders 
 		WHERE created_at >= current_date;
 	`).Scan(&dashboard.OrdersToday)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 			SUM(ci.quantity) AS sold_count, 
 			SUM(ci.quantity * p.price) AS total_revenue
 		FROM orders od
-		JOIN order_items ci ON od.order_id = ci.order_id
+		JOIN order_items ci ON od.id = ci.order_id
 		JOIN products p ON ci.product_id = p.id
 		WHERE od.created_at >= date_trunc('month', current_date)
 		GROUP BY p.name_en
@@ -137,7 +137,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// RecentOrders
 	rows, err = s.db.Query(`
 		SELECT 
-			od.order_id, 
+			od.id, 
 			u.username, 
 			od.total_price, 
 			od.status, 
@@ -166,7 +166,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 			SUM(ci.quantity * p.price) AS category_revenue,
 			(SUM(ci.quantity * p.price) * 100.0 / (SELECT COALESCE(SUM(total_price), 1) FROM orders WHERE created_at >= date_trunc('month', current_date))) AS percentage
 		FROM orders od
-		JOIN order_items ci ON od.order_id = ci.order_id
+		JOIN order_items ci ON od.id = ci.order_id
 		JOIN products p ON ci.product_id = p.id
 		JOIN categories c ON p.categories_id = c.id
 		WHERE od.created_at >= date_trunc('month', current_date)
@@ -192,7 +192,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		SELECT 
 			TO_CHAR(created_at, 'HH24') AS hour, 
 			COUNT(id) AS orders_count,
-			(COUNT(id) * 100.0 / (SELECT COUNT(order_id) FROM ordes WHERE created_at >= date_trunc('month', current_date))) AS percentage
+			(COUNT(id) * 100.0 / (SELECT COUNT(id) FROM ordes WHERE created_at >= date_trunc('month', current_date))) AS percentage
 		FROM orders
 		WHERE created_at >= date_trunc('month', current_date)
 		GROUP BY hour
