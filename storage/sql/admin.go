@@ -146,7 +146,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// RecentOrders
 	rows, err = s.db.Query(`
 		SELECT 
-			od.id, 
+			od.order_number, 
 			u.username, 
 			od.total_price, 
 			od.status, 

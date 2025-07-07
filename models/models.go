@@ -232,7 +232,7 @@ type TopProducts struct {
 }
 
 type RecentOrders struct {
-	OrderID  string  `json:"id"`
+	OrderID  int     `json:"id"`
 	Customer string  `json:"customer"`
 	Total    float64 `json:"total"`
 	Status   string  `json:"status"`
