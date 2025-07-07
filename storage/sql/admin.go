@@ -192,7 +192,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		SELECT 
 			TO_CHAR(created_at, 'HH24') AS hour, 
 			COUNT(id) AS orders_count,
-			(COUNT(id) * 100.0 / (SELECT COUNT(id) FROM ordes WHERE created_at >= date_trunc('month', current_date))) AS percentage
+			(COUNT(id) * 100.0 / (SELECT COUNT(id) FROM orders WHERE created_at >= date_trunc('month', current_date))) AS percentage
 		FROM orders
 		WHERE created_at >= date_trunc('month', current_date)
 		GROUP BY hour
