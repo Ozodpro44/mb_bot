@@ -95,11 +95,22 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// }	// Trends
 	err = s.db.QueryRow(`
 		SELECT 
-			COALESCE(SUM(CASE WHEN created_at >= date_trunc('month', current_date) THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN 1 ELSE 0 END), 0), 0) AS orders_change,
-			COALESCE(SUM(CASE WHEN created_at >= date_trunc('month', current_date) THEN total_price ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN total_price ELSE 0 END), 0), 0) AS revenue_change,
-			COALESCE(SUM(CASE WHEN created_at >= date_trunc('month', current_date) THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN 1 ELSE 0 END), 0), 0) AS users_change,
-			COALESCE(AVG(CASE WHEN created_at >= date_trunc('month', current_date) THEN total_price ELSE 0 END) * 100.0 / NULLIF(AVG(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN total_price ELSE 0 END), 0), 0) AS aov_change
-		FROM orders;
+			COALESCE(
+				(SELECT COUNT(id) FROM orders WHERE created_at >= date_trunc('month', current_date)) * 100.0 / 
+				NULLIF((SELECT COUNT(id) FROM orders WHERE created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date)), 0), 
+			0) AS orders_change,
+			COALESCE(
+				(SELECT SUM(total_price) FROM orders WHERE created_at >= date_trunc('month', current_date)) * 100.0 / 
+				NULLIF((SELECT SUM(total_price) FROM orders WHERE created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date)), 0), 
+			0) AS revenue_change,
+			COALESCE(
+				(SELECT COUNT(id) FROM users WHERE created_at >= date_trunc('month', current_date)) * 100.0 / 
+				NULLIF((SELECT COUNT(id) FROM users WHERE created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date)), 0), 
+			0) AS users_change,
+			COALESCE(
+				(SELECT AVG(total_price) FROM orders WHERE created_at >= date_trunc('month', current_date)) * 100.0 / 
+				NULLIF((SELECT AVG(total_price) FROM orders WHERE created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date)), 0), 
+			0) AS aov_change;
 	`).Scan(&dashboard.Trends.Orders, &dashboard.Trends.Revenue, &dashboard.Trends.Users, &dashboard.Trends.Aov)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get trends: %v", err)
@@ -230,7 +241,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	for rows.Next() {
 		var bp models.BranchPerformance
 		bp.Status = "Good" // Placeholder
-		if err := rows.Scan(&bp.Name, &bp.Revenue, &bp.Percetage); err != nil {
+		if err := rows.Scan(&bp.Name, &bp.Revenue, &bp.Percentage); err != nil {
 			return nil, fmt.Errorf("failed to scan branch performance: %v", err)
 		}
 		dashboard.BranchPerformance = append(dashboard.BranchPerformance, bp)

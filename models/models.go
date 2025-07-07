@@ -71,8 +71,8 @@ type Categories struct {
 }
 
 type Category struct {
-	ID         string	`json:"id"`
-	Name_uz    string	`json:"name"`
+	ID         string `json:"id"`
+	Name_uz    string `json:"name"`
 	Name_ru    string
 	Name_en    string
 	Name_tr    string
@@ -253,10 +253,10 @@ type PeakHours struct {
 }
 
 type BranchPerformance struct {
-	Name      string  `json:"name"`
-	Revenue   float64 `json:"revenue"`
-	Percetage float64 `json:"percetage"`
-	Status    string  `json:"status"`
+	Name       string  `json:"name"`
+	Revenue    float64 `json:"revenue"`
+	Percentage float64 `json:"percentage"`
+	Status     string  `json:"status"`
 }
 
 type SalesOverview struct {
