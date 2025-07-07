@@ -15,7 +15,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// TotalOrders (This Month)
 	err := s.db.QueryRow(`
-		SELECT COUNT(order_id) FROM order_details 
+		SELECT COUNT(order_id) FROM orders 
 		WHERE created_at >= date_trunc('month', current_date);
 	`).Scan(&dashboard.TotalOrders)
 	if err != nil {
@@ -24,7 +24,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// TotalRevenue (This Month)
 	err = s.db.QueryRow(`
-		SELECT COALESCE(SUM(total_price), 0) FROM order_details 
+		SELECT COALESCE(SUM(total_price), 0) FROM orders 
 		WHERE created_at >= date_trunc('month', current_date);
 	`).Scan(&dashboard.TotalRevenue)
 	if err != nil {
@@ -41,7 +41,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// AvgOrderValue (This Month)
 	err = s.db.QueryRow(`
-		SELECT COALESCE(AVG(total_price), 0) FROM order_details 
+		SELECT COALESCE(AVG(total_price), 0) FROM orders 
 		WHERE created_at >= date_trunc('month', current_date);
 	`).Scan(&dashboard.AvgOrderValue)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// OrdersToday
 	err = s.db.QueryRow(`
-		SELECT COUNT(order_id) FROM order_details 
+		SELECT COUNT(order_id) FROM orders 
 		WHERE created_at >= current_date;
 	`).Scan(&dashboard.OrdersToday)
 	if err != nil {
@@ -59,7 +59,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 
 	// RevenueToday
 	err = s.db.QueryRow(`
-		SELECT COALESCE(SUM(total_price), 0) FROM order_details 
+		SELECT COALESCE(SUM(total_price), 0) FROM orders 
 		WHERE created_at >= current_date;
 	`).Scan(&dashboard.RevenueToday)
 	if err != nil {
@@ -99,7 +99,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 			COALESCE(SUM(CASE WHEN created_at >= date_trunc('month', current_date) THEN total_price ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN total_price ELSE 0 END), 0), 0) AS revenue_change,
 			COALESCE(SUM(CASE WHEN created_at >= date_trunc('month', current_date) THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN 1 ELSE 0 END), 0), 0) AS users_change,
 			COALESCE(AVG(CASE WHEN created_at >= date_trunc('month', current_date) THEN total_price ELSE 0 END) * 100.0 / NULLIF(AVG(CASE WHEN created_at >= date_trunc('month', current_date) - interval '1 month' AND created_at < date_trunc('month', current_date) THEN total_price ELSE 0 END), 0), 0) AS aov_change
-		FROM order_details;
+		FROM orders;
 	`).Scan(&dashboard.Trends.Orders, &dashboard.Trends.Revenue, &dashboard.Trends.Users, &dashboard.Trends.Aov)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get trends: %v", err)
@@ -111,9 +111,9 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		SELECT 
 			p.name_en, 
 			SUM(ci.quantity) AS sold_count, 
-			SUM(ci.quantity * ci.price) AS total_revenue
-		FROM order_details od
-		JOIN cart_items ci ON od.order_id = ci.order_id
+			SUM(ci.quantity * p.price) AS total_revenue
+		FROM orders od
+		JOIN order_items ci ON od.order_id = ci.order_id
 		JOIN products p ON ci.product_id = p.id
 		WHERE od.created_at >= date_trunc('month', current_date)
 		GROUP BY p.name_en
@@ -142,7 +142,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 			od.total_price, 
 			od.status, 
 			od.created_at
-		FROM order_details od
+		FROM orders od
 		JOIN users u ON od.user_id = u.id
 		ORDER BY od.created_at DESC
 		LIMIT 5;
@@ -163,10 +163,10 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			c.name_en, 
-			SUM(ci.quantity * ci.price) AS category_revenue,
-			(SUM(ci.quantity * ci.price) * 100.0 / (SELECT COALESCE(SUM(total_price), 1) FROM order_details WHERE created_at >= date_trunc('month', current_date))) AS percentage
-		FROM order_details od
-		JOIN cart_items ci ON od.order_id = ci.order_id
+			SUM(ci.quantity * p.price) AS category_revenue,
+			(SUM(ci.quantity * p.price) * 100.0 / (SELECT COALESCE(SUM(total_price), 1) FROM orders WHERE created_at >= date_trunc('month', current_date))) AS percentage
+		FROM orders od
+		JOIN order_items ci ON od.order_id = ci.order_id
 		JOIN products p ON ci.product_id = p.id
 		JOIN categories c ON p.categories_id = c.id
 		WHERE od.created_at >= date_trunc('month', current_date)
@@ -191,9 +191,9 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			TO_CHAR(created_at, 'HH24') AS hour, 
-			COUNT(order_id) AS orders_count,
-			(COUNT(order_id) * 100.0 / (SELECT COUNT(order_id) FROM order_details WHERE created_at >= date_trunc('month', current_date))) AS percentage
-		FROM order_details
+			COUNT(id) AS orders_count,
+			(COUNT(id) * 100.0 / (SELECT COUNT(order_id) FROM ordes WHERE created_at >= date_trunc('month', current_date))) AS percentage
+		FROM orders
 		WHERE created_at >= date_trunc('month', current_date)
 		GROUP BY hour
 		ORDER BY orders_count DESC
@@ -216,8 +216,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		SELECT 
 			b.name, 
 			SUM(od.total_price) AS branch_revenue,
-			(SUM(od.total_price) * 100.0 / (SELECT COALESCE(SUM(total_price), 1) FROM order_details WHERE created_at >= date_trunc('month', current_date))) AS percentage
-		FROM order_details od
+			(SUM(od.total_price) * 100.0 / (SELECT COALESCE(SUM(total_price), 1) FROM orders WHERE created_at >= date_trunc('month', current_date))) AS percentage
+		FROM orders od
 		JOIN branch b ON od.branch_id = b.id
 		WHERE od.created_at >= date_trunc('month', current_date)
 		GROUP BY b.name
@@ -250,8 +250,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(order_id) AS orders_count
-		FROM order_details
+			COUNT(id) AS orders_count
+		FROM orders
 		WHERE created_at >= current_date - interval '7 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
 		ORDER BY day;
@@ -274,8 +274,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(order_id) AS orders_count
-		FROM order_details
+			COUNT(id) AS orders_count
+		FROM orders
 		WHERE created_at >= current_date - interval '30 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
 		ORDER BY day;
@@ -296,8 +296,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(order_id) AS orders_count
-		FROM order_details
+			COUNT(id) AS orders_count
+		FROM orders
 		WHERE created_at >= current_date - interval '90 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
 		ORDER BY day;
