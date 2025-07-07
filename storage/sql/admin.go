@@ -105,7 +105,6 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		return nil, fmt.Errorf("failed to get trends: %v", err)
 	}
 
-
 	// TopProducts
 	rows, err := s.db.Query(`
 		SELECT 
@@ -133,7 +132,7 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		dashboard.TopProducts = append(dashboard.TopProducts, tp)
 	}
 
-// 
+	//
 	// RecentOrders
 	rows, err = s.db.Query(`
 		SELECT 
@@ -246,6 +245,10 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// for i := 0; i < 90; i++ {
 	// 	dashboard.SalesOverview.NinetyDays[i] = 0 // Initialize with 0
 	// }
+
+	dashboard.SalesOverview.SevenDays = make([]int, 7)
+	dashboard.SalesOverview.ThirtyDays = make([]int, 30)
+	dashboard.SalesOverview.NinetyDays = make([]int, 90)
 
 	rows, err = s.db.Query(`
 		SELECT 
