@@ -243,9 +243,9 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// 	ThirtyDays: []int{100, 120, 110, 130, 150, 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105}, // Placeholder
 	// 	NinetyDays: make([]int, 90),                                                                                                                         // Placeholder
 	// }
-	for i := 0; i < 90; i++ {
-		dashboard.SalesOverview.NinetyDays[i] = 0 // Initialize with 0
-	}
+	// for i := 0; i < 90; i++ {
+	// 	dashboard.SalesOverview.NinetyDays[i] = 0 // Initialize with 0
+	// }
 
 	rows, err = s.db.Query(`
 		SELECT 
