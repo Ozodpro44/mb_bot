@@ -314,6 +314,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 		}
 		dashboard.SalesOverview.NinetyDays[day%90] = count
 	}
+	fmt.Println("dashboard:")
+	fmt.Println(dashboard)
 	return &dashboard, nil
 }
 
