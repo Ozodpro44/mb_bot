@@ -215,6 +215,7 @@ type Dashboard struct {
 	PeakHours           []PeakHours           `json:"peakHours"`
 	BranchPerformance   []BranchPerformance   `json:"branchPerformance"`
 	SalesOverview       SalesOverview         `json:"salesOverview"`
+	OrdersOverview 		OrdersOverview		  `json:"ordersOverview"`
 }
 
 type Trends struct {
@@ -264,3 +265,11 @@ type SalesOverview struct {
 	ThirtyDays []int `json:"30d"`
 	NinetyDays []int `json:"90d"`
 }
+
+type OrdersOverview struct {
+	SevenDays  []int `json:"7d"`
+	ThirtyDays []int `json:"30d"`
+	NinetyDays []int `json:"90d"`
+}
+
+

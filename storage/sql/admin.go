@@ -256,6 +256,10 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	// 	dashboard.SalesOverview.NinetyDays[i] = 0 // Initialize with 0
 	// }
 
+	dashboard.OrdersOverview.SevenDays = make([]int, 7)
+	dashboard.OrdersOverview.ThirtyDays = make([]int, 30)
+	dashboard.OrdersOverview.NinetyDays = make([]int, 90)
+
 	dashboard.SalesOverview.SevenDays = make([]int, 7)
 	dashboard.SalesOverview.ThirtyDays = make([]int, 30)
 	dashboard.SalesOverview.NinetyDays = make([]int, 90)
@@ -263,7 +267,8 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(id) AS orders_count
+			COUNT(id) AS orders_count,
+			SUM(total_price) AS total_revenue
 		FROM orders
 		WHERE created_at >= current_date - interval '7 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
@@ -276,18 +281,21 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	for rows.Next() {
 		var day int
 		var count int
-		if err := rows.Scan(&day, &count); err != nil {
+		var revenue int
+		if err := rows.Scan(&day, &count, &revenue); err != nil {
 			return nil, fmt.Errorf("failed to scan 7-day sales overview: %v", err)
 		}
 		// Assuming the last 7 days are represented, map day to index 0-6
 		// This needs more robust date handling for real-world scenarios
 		dashboard.SalesOverview.SevenDays[day%7] = count
+		dashboard.OrdersOverview.SevenDays[day%7] = revenue
 	}
 
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(id) AS orders_count
+			COUNT(id) AS orders_count,
+			SUM(total_price) AS total_revenue
 		FROM orders
 		WHERE created_at >= current_date - interval '30 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
@@ -300,16 +308,19 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	for rows.Next() {
 		var day int
 		var count int
-		if err := rows.Scan(&day, &count); err != nil {
+		var revenue int
+		if err := rows.Scan(&day, &count, &revenue); err != nil {
 			return nil, fmt.Errorf("failed to scan 30-day sales overview: %v", err)
 		}
 		dashboard.SalesOverview.ThirtyDays[day%30] = count
+		dashboard.OrdersOverview.ThirtyDays[day%30] = revenue
 	}
 
 	rows, err = s.db.Query(`
 		SELECT 
 			EXTRACT(DAY FROM created_at) AS day, 
-			COUNT(id) AS orders_count
+			COUNT(id) AS orders_count,
+			SUM(total_price) AS total_revenue
 		FROM orders
 		WHERE created_at >= current_date - interval '90 days'
 		GROUP BY EXTRACT(DAY FROM created_at)
@@ -322,13 +333,16 @@ func (s *Storage) GetDashboard() (*models.Dashboard, error) {
 	for rows.Next() {
 		var day int
 		var count int
-		if err := rows.Scan(&day, &count); err != nil {
+		var revenue int
+		if err := rows.Scan(&day, &count, &revenue); err != nil {
 			return nil, fmt.Errorf("failed to scan 90-day sales overview: %v", err)
 		}
 		dashboard.SalesOverview.NinetyDays[day%90] = count
+		dashboard.OrdersOverview.NinetyDays[day%90] = revenue
 	}
-	fmt.Println("dashboard:")
-	fmt.Println(dashboard)
+	// fmt.Println("dashboard:")
+	// fmt.Println(dashboard)
+
 	return &dashboard, nil
 }
 
