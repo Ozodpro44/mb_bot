@@ -3,7 +3,6 @@ package handlers
 import (
 	"bot/lib/helpers"
 	"bot/models"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -1524,14 +1523,7 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 		fmt.Println(err)
 	}
 
-	go func() {
-		newOrder := map[string]interface{}{
-			"data":     "new order",
-			"order_id": orderID,
-		}
-		jsonData, _ := json.Marshal(newOrder)
-		broadcast <- jsonData
-	}()
+	PushNewOrders(orderID)
 
 	return h.SendOrderToGroup(c.Bot(), orderDetails)
 }

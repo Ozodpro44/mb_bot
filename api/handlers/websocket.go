@@ -9,7 +9,7 @@ import (
 
 var (
 	clients   = make(map[*websocket.Conn]bool)
-	broadcast = make(chan []byte)
+	broadcast = make(chan string)
 
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -54,6 +54,6 @@ func StartBroadcast() {
 	}
 }
 
-// func PushNewOrders(Data string) {
-// 	broadcast <- Data
-// }
+func PushNewOrders(Data string) {
+	broadcast <- Data
+}
