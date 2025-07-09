@@ -206,7 +206,7 @@ func Api(o *Options) {
 
 	go handlers.StartBroadcast()
 
-	// o.R.HandleFunc("/ws", handleConections)
+	o.R.HandleFunc("/ws", handlers.WebSocketHandler)
 
 	o.R.HandleFunc("/api/products", h.GetProducts).Methods("GET")
 	o.R.HandleFunc("/api/products-by-category/{category_id}", h.GetProductsByCategory).Methods("GET")
