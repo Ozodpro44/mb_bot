@@ -204,7 +204,6 @@ func Api(o *Options) {
 
 	go bot.Start()
 
-	go handlers.StartBroadcast()
 
 	o.R.HandleFunc("/ws", handlers.WebSocketHandler)
 

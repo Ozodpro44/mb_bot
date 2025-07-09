@@ -1528,7 +1528,7 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	go func() {
 		newOrder := map[string]interface{}{
 			"type": "new_order",
-			"data": orderID,
+			"data": "orderid",
 		}
 		jsonData, _ := json.Marshal(newOrder)
 		broadcast <- jsonData

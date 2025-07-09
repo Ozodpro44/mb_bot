@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"bot/api"
+	"bot/api/handlers"
 	postgres "bot/storage/sql"
 
 	"github.com/gorilla/mux"
@@ -25,7 +26,7 @@ func main() {
 	if err != nil {
 		log.Println("Error loading .env file", err)
 	}
-
+	
 	token := os.Getenv("BOT_TOKEN")
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
@@ -33,27 +34,29 @@ func main() {
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
 	sslmode := os.Getenv("DB_SSLMODE")
-
+	
 	storagePath := fmt.Sprintf(sqliteStoragePath, user, password, dbname, host, port, sslmode)
-
+	
 	s, err := postgres.New(storagePath)
 	if err != nil {
 		log.Fatal("can't connect to storage: ", err)
 	}
-
+	
 	pref := telebot.Settings{
 		Token: token,
 		Poller: &telebot.LongPoller{
 			Timeout: 30 * time.Second,
 		},
 	}
-
+	go handlers.StartBroadcast()
+	
 	r := mux.NewRouter()
 	api.Api(&api.Options{
 		Tg:      pref,
 		Storage: s,
 		R:       r,
 	})
+
 
 	// r.PathPrefix("/photos/").Handler(http.StripPrefix("/photos/", http.FileServer(http.Dir("./photos"))))
 
