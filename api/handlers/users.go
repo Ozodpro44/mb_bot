@@ -3,6 +3,7 @@ package handlers
 import (
 	"bot/lib/helpers"
 	"bot/models"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -863,7 +864,7 @@ func (h *handlers) ShowProductByID(c telebot.Context) error {
 
 // Function to display product menu with quantity options
 func (h *handlers) sendProductMenu(c telebot.Context, product *models.Product, quantity int) error {
-	photoPath := fmt.Sprintf("./photos/%s",product.Photo)
+	photoPath := fmt.Sprintf("./photos/%s", product.Photo)
 	if _, err := os.Stat(photoPath); os.IsNotExist(err) {
 		photoPath = "./photos/no_photo.jpg"
 	}
@@ -1522,6 +1523,16 @@ func (h *handlers) CompleteOrder(c telebot.Context) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	go func() {
+		newOrder := map[string]interface{}{
+			"data":     "new order",
+			"order_id": orderID,
+		}
+		jsonData, _ := json.Marshal(newOrder)
+		broadcast <- jsonData
+	}()
+
 	return h.SendOrderToGroup(c.Bot(), orderDetails)
 }
 

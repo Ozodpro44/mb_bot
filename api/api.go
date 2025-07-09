@@ -204,6 +204,10 @@ func Api(o *Options) {
 
 	go bot.Start()
 
+	go handlers.StartBroadcast()
+
+	// o.R.HandleFunc("/ws", handleConections)
+
 	o.R.HandleFunc("/api/products", h.GetProducts).Methods("GET")
 	o.R.HandleFunc("/api/products-by-category/{category_id}", h.GetProductsByCategory).Methods("GET")
 	// o.R.HandleFunc("/api/products", )
